@@ -12,11 +12,18 @@
     <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
 
     <style>
-        /* (CSS da v4/v10 - Sem alterações) */
         body { font-family: 'Inter', sans-serif; }
         .hidden-screen { display: none; }
         .conditional-field { display: none; }
-        
+
+        /* Força o login a ocupar toda a tela */
+        #login-screen {
+            display: none; /* será controlado pelo JS */
+        }
+        #login-screen.active {
+            display: flex !important;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner {
             border: 4px solid rgba(0, 0, 0, 0.1);
@@ -31,10 +38,70 @@
             height: 20px;
             border-width: 2px;
         }
+
+        /* TOGGLE SWITCH - 100% FUNCIONAL NO HTML */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-track {
+            position: relative;
+            width: 56px;
+            height: 32px;
+            background-color: #d1d5db;
+            border-radius: 9999px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+        .toggle-dot {
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        /* ESTADO ATIVADO */
+        #dark-mode-toggle:checked + .toggle-container .toggle-track {
+            background-color: #2563eb;
+        }
+        #dark-mode-toggle:checked + .toggle-container .toggle-dot {
+            transform: translateX(24px);
+            background-color: #1f2937;
+        }
+
+        /* MODO ESCURO GLOBAL */
+        .dark {
+            background-color: #111827 !important;
+            color: #f3f4f6 !important;
+        }
+        .dark * { transition: background-color 0.3s, color 0.3s, border-color 0.3s !important; }
+        .dark .bg-white { background-color: #1f2937 !important; }
+        .dark .bg-gray-50 { background-color: #111827 !important; }
+        .dark .bg-gray-100 { background-color: #374151 !important; }
+        .dark .bg-gray-200 { background-color: #4b5563 !important; }
+        .dark .bg-blue-600 { background-color: #2563eb !important; }
+        .dark .bg-red-600 { background-color: #dc2626 !important; }
+        .dark .bg-green-600 { background-color: #16a34a !important; }
+        .dark .text-gray-800 { color: #e5e7eb !important; }
+        .dark .text-gray-700 { color: #d1d5db !important; }
+        .dark .text-gray-600 { color: #9ca3af !important; }
+        .dark .border-gray-200 { border-color: #374151 !important; }
+        .dark input, .dark select, .dark textarea {
+            background-color: #374151 !important;
+            color: white !important;
+            border-color: #4b5563 !important;
+        }
+        .dark input::placeholder { color: #9ca3af !important; }
     </style>
 </head>
-<body class="bg-gray-100 antialiased">
-
+<body class="bg-white antialiased transition-colors duration-300">
+    
     <!-- (HTML da v10/v11 - Sem alterações) -->
     
     <!-- 1. TELA DE CARREGAMENTO INICIAL -->
@@ -44,74 +111,108 @@
     </div>
 
     <!-- 2. TELA DE LOGIN -->
-    <div id="login-screen" class="hidden-screen min-h-screen flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
-            <h1 class="text-3xl font-bold text-blue-800 text-center mb-6">Checklist Poupa Tempo</h1>
-            <form id="login-form">
-                <div class="mb-4">
-                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="login-email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div class="mb-6">
-                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                    <input type="password" id="login-password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div id="login-error" class="text-red-600 text-sm text-center mb-4 hidden-screen"></div>
-                <button type="submit" id="btn-login" class="w-full flex justify-center items-center py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
-                    <span class="spinner-small spinner hidden-screen mr-2"></span>
-                    Entrar
-                </button>
-            </form>
-        </div>
+    <div id="login-screen" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-50 p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
+        <h1 class="text-3xl font-bold text-blue-800 text-center mb-6">Checklist Poupa Tempo</h1>
+        <form id="login-form">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input type="password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div id="login-error" class="text-red-600 text-sm text-center mb-4 hidden"></div>
+            <button type="submit" id="btn-login" class="w-full flex items-center justify-center py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 group">
+                <span class="spinner-small spinner hidden mr-3"></span>
+                <span>Entrar</span>
+            </button>
+        </form>
     </div>
+</div>
 
     <!-- 3. TELA DO TÉCNICO (CHECKLIST) -->
-    <div id="app-screen-tecnico" class="hidden-screen max-w-lg mx-auto p-4 bg-white min-h-screen shadow-lg">
-        <header class="mb-6 pb-4 border-b border-gray-200 flex justify-between items-center">
-            <div>
+    <div id="app-screen-tecnico" class="hidden-screen max-w-lg mx-auto p-6 bg-white min-h-screen shadow-lg">
+        <header class="mb-8 pb-4 border-b border-gray-200 flex justify-between items-start">
+            <div class="flex-1">
                 <h1 class="text-2xl font-bold text-blue-800">Checklist Técnico</h1>
-                <div class="mt-2 text-sm text-gray-600">
+                <div class="mt-2 text-sm text-gray-900">
                     <p>Técnico: <span id="user-name-display" class="font-medium text-gray-900">...</span></p>
                     <p>Unidade: <span id="unidade-display" class="font-medium text-gray-900">...</span></p>
                 </div>
             </div>
-            <button id="btn-logout-tecnico" class="text-sm text-red-600 hover:underline">Sair</button>
+            <!-- BOTÃO MODO ESCURO (TÉCNICO E GESTOR) -->
+            <div class="flex items-center gap-6">
+            <button class="dark-mode-btn p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-md ml-3">
+                <!-- SOL (MODO CLARO) -->
+                <svg class="sun-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-3.05-.293l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM5 11a1 1 0 100-2H4a1 1 0 000 2h1z"/>
+                </svg>
+                <!-- LUA (MODO ESCURO) -->
+                <svg class="moon-icon w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                </svg>
+            </button>
+            <!-- BOTÃO SAIR -->
+            <button id="btn-logout-tecnico" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-lg transition transform hover:scale-105 active:scale-95">
+                Sair
+            </button>
         </header>
 
         <!-- 3.1. TELA DE SELEÇÃO (Abertura / Fechamento) -->
-        <div id="selection-view">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Iniciar Novo Checklist</h2>
-            <div class="flex flex-col space-y-4">
-                <button id="btn-abertura" class="w-full text-left p-6 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition">
-                    <h3 class="text-lg font-bold">ABERTURA</h3>
-                    <p class="text-sm opacity-90">Iniciar o checklist de abertura da unidade.</p>
+        <div id="selection-view" class="text-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-8">Iniciar Novo Checklist</h2>
+            <div class="space-y-6">
+                <button id="btn-abertura" class="w-full text-left p-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xl transition transform hover:scale-105 active:scale-100 flex items-center justify-between group">
+                    <div>
+                        <h3 class="text-xl font-bold">ABERTURA</h3>
+                        <p class="text-sm opacity-90 mt-1">Iniciar o checklist de abertura da unidade.</p>
+                    </div>
+                    <span class="text-3xl group-hover:translate-x-2 transition">→</span>
                 </button>
-                <button id="btn-fechamento" class="w-full text-left p-6 bg-gray-700 text-white rounded-lg shadow-md hover:bg-gray-800 transition">
-                    <h3 class="text-lg font-bold">FECHAMENTO</h3>
-                    <p class="text-sm opacity-90">Iniciar o checklist de fechamento da unidade.</p>
+
+                <button id="btn-fechamento" class="w-full text-left p-8 bg-gray-700 hover:bg-gray-800 text-white rounded-xl shadow-lg transition transform hover:scale-105 active:scale-100 flex items-center justify-between group">
+                    <div>
+                        <h3 class="text-xl font-bold">FECHAMENTO</h3>
+                        <p class="text-sm opacity-90 mt-1">Iniciar o checklist de fechamento da unidade.</p>
+                    </div>
+                    <span class="text-3xl group-hover:translate-x-2 transition">→</span>
                 </button>
             </div>
         </div>
 
         <!-- 3.2. TELA DE PREENCHIMENTO (Checklist) -->
         <div id="checklist-view" class="hidden-screen">
-            <button id="btn-voltar" class="mb-4 text-sm text-blue-600 hover:underline">&larr; Voltar para seleção</button>
-            <h2 id="checklist-title" class="text-2xl font-semibold mb-6 text-gray-800"></h2>
+            <button id="btn-voltar" class="mb-6 flex items-center text-blue-600 hover:text-blue-700 transition group">
+                <span class="text-xl mr-1 group-hover:-translate-x-1 transition">←</span>
+                <span class="font-medium">Voltar para seleção</span>
+            </button>
+            <h2 id="checklist-title" class="text-2xl font-bold text-gray-800 mb-8 text-center"></h2>
             
             <form id="checklist-form" class="space-y-6">
                 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">1. Qual o status dos Computadores?</legend>
-                    <div class="mt-2 space-y-2">
-                        <label><input type="radio" name="item_computadores" value="ligados" class="mr-2" required> Ligados</label><br>
-                        <label><input type="radio" name="item_computadores" value="desligados" class="mr-2"> Desligados</label><br>
-                        <label><input type="radio" name="item_computadores" value="outra" class="mr-2"> Outra</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">1. Qual o status dos Computadores?</legend>
+                    <div class="grid grid-cols-1 gap-3">
+                        <label class="flex items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_computadores" value="ligados" class="sr-only" required>
+                            <span class="font-medium">Ligados</span>
+                        </label>
+                        <label class="flex items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_computadores" value="desligados" class="sr-only">
+                            <span class="font-medium">Desligados</span>
+                        </label>
+                        <label class="flex items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_computadores" value="outra" class="sr-only">
+                            <span class="font-medium">Outra</span>
+                        </label>
                     </div>
                 </fieldset>
 
-                <fieldset id="conditional_computadores" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_computadores_motivo">1a. Motivo (Computadores)</legend>
-                    <select id="item_computadores_motivo" name="item_computadores_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <fieldset id="conditional_computadores" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_computadores_motivo">1a. Motivo (Computadores)</legend>
+                    <select id="item_computadores_motivo" name="item_computadores_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="windows_corrompeu">Windows Corrompeu</option>
                         <option value="nao_liga">Não Liga</option>
@@ -121,17 +222,23 @@
                     </select>
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">2. Contagem de Equipamentos está correta?</legend>
-                    <div class="mt-2 flex space-x-4">
-                        <label class="flex-1"><input type="radio" name="item_contagem" value="sim" class="mr-2" required> Sim</label>
-                        <label class="flex-1"><input type="radio" name="item_contagem" value="nao" class="mr-2"> Não</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">2. Contagem de Equipamentos está correta?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-green-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-green-400">
+                            <input type="radio" name="item_contagem" value="sim" class="sr-only" required>
+                            <span class="font-bold text-lg">SIM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-red-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-red-400">
+                            <input type="radio" name="item_contagem" value="nao" class="sr-only">
+                            <span class="font-bold text-lg">NÃO</span>
+                        </label>
                     </div>
                 </fieldset>
                 
-                <fieldset id="conditional_contagem" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_contagem_motivo">2a. Motivo (Contagem)</legend>
-                    <select id="item_contagem_motivo" name="item_contagem_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <fieldset id="conditional_contagem" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_contagem_motivo">2a. Motivo (Contagem)</legend>
+                    <select id="item_contagem_motivo" name="item_contagem_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="faltando_equip">Faltando Equipamento</option>
                         <option value="equip_sobrando">Equipamento Sobrando</option>
@@ -140,17 +247,23 @@
                     </select>
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">3. O Totem permanece ligado?</legend>
-                    <div class="mt-2 flex space-x-4">
-                        <label class="flex-1"><input type="radio" name="item_totem_ligado" value="sim" class="mr-2" required> Sim</label>
-                        <label class="flex-1"><input type="radio" name="item_totem_ligado" value="nao" class="mr-2"> Não</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">3. O Totem permanece ligado?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-green-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-green-400">
+                            <input type="radio" name="item_totem_ligado" value="sim" class="sr-only" required>
+                            <span class="font-bold text-lg">SIM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-red-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-red-400">
+                            <input type="radio" name="item_totem_ligado" value="nao" class="sr-only">
+                            <span class="font-bold text-lg">NÃO</span>
+                        </label>
                     </div>
                 </fieldset>
 
                 <fieldset id="conditional_totem" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_totem_motivo">3a. Motivo da Falha (Totem)</legend>
-                    <select id="item_totem_motivo" name="item_totem_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_totem_motivo">3a. Motivo da Falha (Totem)</legend>
+                    <select id="item_totem_motivo" name="item_totem_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="windows_corrompeu">Windows Corrompeu</option>
                         <option value="equipamento_molhado">Equipamento Molhado</option>
@@ -160,17 +273,23 @@
                     </select>
                 </fieldset>
                 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">4. O Tablet corporativo está OK?</legend>
-                    <div class="mt-2 flex space-x-4">
-                        <label class="flex-1"><input type="radio" name="item_tablet_corp_ok" value="sim" class="mr-2" required> Sim</label>
-                        <label class="flex-1"><input type="radio" name="item_tablet_corp_ok" value="nao" class="mr-2"> Não</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">4. O Tablet corporativo está Funcionando normalmente?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-green-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-green-400">
+                            <input type="radio" name="item_tablet_corp_ok" value="sim" class="sr-only" required>
+                            <span class="font-bold text-lg">SIM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-red-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-red-400">
+                            <input type="radio" name="item_tablet_corp_ok" value="nao" class="sr-only">
+                            <span class="font-bold text-lg">NÃO</span>
+                        </label>
                     </div>
                 </fieldset>
                 
-                <fieldset id="conditional_tablet_corp" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_tablet_corp_motivo">4a. Motivo (Tablet Corp.)</legend>
-                    <select id="item_tablet_corp_motivo" name="item_tablet_corp_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <fieldset id="conditional_tablet_corp" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_tablet_corp_motivo">4a. Motivo (Tablet Corp.)</legend>
+                    <select id="item_tablet_corp_motivo" name="item_tablet_corp_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="nao_liga">Não Liga</option>
                         <option value="tela_trincada">Tela Trincada</option>
@@ -180,22 +299,28 @@
                     </select>
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_tablet_corp_posse">5. O Tablet Ficou na posse de quem?</legend>
-                    <input type="text" id="item_tablet_corp_posse" name="item_tablet_corp_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_tablet_corp_posse">5. O Tablet Ficou na posse de quem?</legend>
+                    <input type="text" id="item_tablet_corp_posse" name="item_tablet_corp_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">6. O Celular corporativo está OK?</legend>
-                    <div class="mt-2 flex space-x-4">
-                        <label class="flex-1"><input type="radio" name="item_celular_corp_ok" value="sim" class="mr-2" required> Sim</label>
-                        <label class="flex-1"><input type="radio" name="item_celular_corp_ok" value="nao" class="mr-2"> Não</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">6. O Celular corporativo está Funcionando normalmente?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-green-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-green-400">
+                            <input type="radio" name="item_celular_corp_ok" value="sim" class="sr-only" required>
+                            <span class="font-bold text-lg">SIM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-red-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-red-400">
+                            <input type="radio" name="item_celular_corp_ok" value="nao" class="sr-only">
+                            <span class="font-bold text-lg">NÃO</span>
+                        </label>
                     </div>
                 </fieldset>
 
-                <fieldset id="conditional_celular_corp" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_corp_motivo">6a. Motivo (Celular Corp.)</legend>
-                    <select id="item_celular_corp_motivo" name="item_celular_corp_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <fieldset id="conditional_celular_corp" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_corp_motivo">6a. Motivo (Celular Corp.)</legend>
+                    <select id="item_celular_corp_motivo" name="item_celular_corp_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="nao_liga">Não Liga</option>
                         <option value="tela_trincada">Tela Trincada</option>
@@ -205,22 +330,28 @@
                     </select>
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_corp_posse">7. O Celular Ficou na posse de quem?</legend>
-                    <input type="text" id="item_celular_corp_posse" name="item_celular_corp_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_corp_posse">7. O Celular Ficou na posse de quem?</legend>
+                    <input type="text" id="item_celular_corp_posse" name="item_celular_corp_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">8. O Celular corporativo TIC está OK?</legend>
-                    <div class="mt-2 flex space-x-4">
-                        <label class="flex-1"><input type="radio" name="item_celular_tic_ok" value="sim" class="mr-2" required> Sim</label>
-                        <label class="flex-1"><input type="radio" name="item_celular_tic_ok" value="nao" class="mr-2"> Não</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">8. O Celular corporativo TIC está Funcionando normalmente?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-green-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-green-400">
+                            <input type="radio" name="item_celular_tic_ok" value="sim" class="sr-only" required>
+                            <span class="font-bold text-lg">SIM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-red-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-red-400">
+                            <input type="radio" name="item_celular_tic_ok" value="nao" class="sr-only">
+                            <span class="font-bold text-lg">NÃO</span>
+                        </label>
                     </div>
                 </fieldset>
                 
-                <fieldset id="conditional_celular_tic" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_tic_motivo">8a. Motivo (Celular TIC)</legend>
-                    <select id="item_celular_tic_motivo" name="item_celular_tic_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <fieldset id="conditional_celular_tic" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_tic_motivo">8a. Motivo (Celular TIC)</legend>
+                    <select id="item_celular_tic_motivo" name="item_celular_tic_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="nao_liga">Não Liga</option>
                         <option value="tela_trincada">Tela Trincada</option>
@@ -230,42 +361,50 @@
                     </select>
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_tic_posse">9. O Celular TIC Ficou na posse de quem?</legend>
-                    <input type="text" id="item_celular_tic_posse" name="item_celular_tic_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_tic_posse">9. O Celular TIC Ficou na posse de quem?</legend>
+                    <input type="text" id="item_celular_tic_posse" name="item_celular_tic_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">10. Qual o status das salas?</legend>
-                    <div class="mt-2 flex space-x-4">
-                        <label class="flex-1"><input type="radio" name="item_salas_status" value="trancadas" class="mr-2" required> Trancadas (Fechamento)</label>
-                        <label class="flex-1"><input type="radio" name="item_salas_status" value="abertas" class="mr-2"> Abertas (Abertura)</label>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">10. Qual o status das salas?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_salas_status" value="trancadas" class="sr-only" required>
+                            <span class="font-bold text-lg text-center">Trancadas (Fechamento)</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_salas_status" value="abertas" class="sr-only" required>
+                            <span class="font-bold text-lg text-center">Abertas (Abertura)</span>
+                        </label>
                     </div>
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_salas_quais">11. Quais salas estão Trancadas ou Abertas?</legend>
-                    <input type="text" id="item_salas_quais" name="item_salas_quais" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ex: Sala 1, Sala 2, ADM">
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_salas_quais">11. Quais salas estão Trancadas ou Abertas?</legend>
+                    <input type="text" id="item_salas_quais" name="item_salas_quais" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Ex: Sala 1, Sala 2, ADM">
                 </fieldset>
 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_chaves_posse">12. Quem ficou de posse das Chaves?</legend>
-                    <input type="text" id="item_chaves_posse" name="item_chaves_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_chaves_posse">12. Quem ficou de posse das Chaves?</legend>
+                    <input type="text" id="item_chaves_posse" name="item_chaves_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
                 </fieldset>
                 
-                <fieldset class="p-4 border rounded-lg bg-gray-50">
-                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_pendencia">13. Pendências / Observações</legend>
+                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_pendencia">13. Pendências / Observações</legend>
                     <label for="item_pendencia" class="text-sm text-gray-500">Descreva aqui problemas de "Outros" ou informe o nº do chamado aberto.</label>
-                    <textarea id="item_pendencia" name="item_pendencia" rows="4" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta"></textarea>
+                    <textarea id="item_pendencia" name="item_pendencia" rows="4" class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta"></textarea>
                 </fieldset>
 
                 <!-- Div de Erro da Validação -->
-                <div id="checklist-error" class="text-red-600 text-sm text-center mb-4 hidden-screen"></div>
+                <div id="checklist-error" class="hidden bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg text-center font-medium shadow-sm"></div>
 
-                <div class="mt-8 mb-4">
-                    <button type="submit" id="btn-salvar" class="w-full flex justify-center items-center p-4 bg-green-600 text-white rounded-lg shadow-md font-semibold hover:bg-green-700">
-                        <span class="spinner-small spinner hidden-screen mr-2"></span>
-                        Salvar Checklist
+                <div class="pt-8">
+                    <button type="submit" id="btn-salvar" 
+                            class="w-full flex items-center justify-center py-5 px-8 bg-green-600 hover:bg-green-700 text-white font-bold text-xl rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 group">
+                        <span class="spinner-small spinner hidden mr-3"></span>
+                        <span>Salvar Checklist</span>
+                        <span class="ml-4 text-2xl group-hover:translate-x-2 transition">→</span>
                     </button>
                 </div>
             </form>
@@ -273,27 +412,71 @@
     </div>
 
     <!-- 4. TELA DO GESTOR (DASHBOARD) -->
-    <div id="app-screen-gestor" class="hidden-screen max-w-4xl mx-auto p-6 bg-white min-h-screen shadow-lg">
-        <header class="mb-6 pb-4 border-b border-gray-200 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-blue-800">Painel do Gestor</h1>
-                <p class="mt-1 text-sm text-gray-600">Olá, <span id="gestor-name-display" class="font-medium text-gray-900">...</span></p>
+    <div id="app-screen-gestor" class="hidden-screen max-w-5xl mx-auto p-6 bg-white min-h-screen shadow-lg">
+        <header class="mb-8 pb-4 border-b border-gray-200 flex justify-between items-start">
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-blue-800">Painel do Gestor</h1>
+                <div class="mt-2 text-sm text-gray-600">
+                    <p>Gestor: <span id="gestor-name-display" class="font-medium text-gray-900">...</span></p>
+                    <p>Unidade: <span id="unidade-display-gestor" class="font-medium text-gray-900">...</span></p>
+                </div>
             </div>
-            <button id="btn-logout-gestor" class="text-sm text-red-600 hover:underline">Sair</button>
+            <!-- BOTÃO MODO ESCURO (TÉCNICO E GESTOR) -->
+            <div class="flex items-center gap-6">
+                <button class="dark-mode-btn p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-md ml-3">
+                <!-- SOL (MODO CLARO) -->
+                <svg class="sun-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-3.05-.293l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM5 11a1 1 0 100-2H4a1 1 0 000 2h1z"/>
+                </svg>
+                <!-- LUA (MODO ESCURO) -->
+                <svg class="moon-icon w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                </svg>
+            </button>
+            <!-- BOTÃO SAIR -->
+            <button id="btn-logout-gestor" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-lg transition transform hover:scale-105 active:scale-95">Sair</button>
         </header>
-        <div>
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Dashboard (PowerBI)</h2>
-            <p class="text-gray-600 mb-4">
-                Este é o espaço onde o dashboard do PowerBI será incorporado.
-            </p>
-            <div class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
-                (Espaço reservado para o iFrame do PowerBI)
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- CARD 1: CHECKLISTS HOJE -->
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-lg font-semibold opacity-90">Checklists Hoje</h3>
+                <p class="text-3xl font-bold mt-2" id="checklists-hoje">0</p>
+                <p class="text-sm opacity-80 mt-1">Abertura + Fechamento</p>
+            </div>
+
+            <!-- CARD 2: COM OCORRÊNCIA -->
+            <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-lg font-semibold opacity-90">Com Ocorrência</h3>
+                <p class="text-3xl font-bold mt-2" id="com-ocorrencia">0</p>
+                <p class="text-sm opacity-80 mt-1">Pendências reportadas</p>
+            </div>
+
+            <!-- CARD 3: TÉCNICOS ATIVOS -->
+            <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-lg font-semibold opacity-90">Técnicos Ativos</h3>
+                <p class="text-3xl font-bold mt-2" id="tecnicos-ativos">0</p>
+                <p class="text-sm opacity-80 mt-1">Online agora</p>
             </div>
         </div>
+        <!-- DASHBOARD POWER BI -->
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Dashboard Operacional (Power BI)</h2>
+            <div class="w-full h-96 bg-gray-200 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-500">
+                <p class="text-center">
+                    <span class="block text-lg font-medium">Power BI Embed</span>
+                    <span class="text-sm">Insira o iFrame do relatório aqui</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- RODAPÉ -->
+        <footer class="mt-12 text-center text-xs text-gray-500">
+            Checklist Poupa Tempo © 2025 | Desenvolvido com Tailwind + Firebase
+        </footer>
     </div>
 
     <!-- 5. MENSAGEM DE SUCESSO (Modal) -->
-    <div id="success-message" class="hidden-screen fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div id="success-message" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
             <h3 class="text-xl font-semibold mt-4 mb-2 text-gray-800">Salvo com Sucesso!</h3>
             <button id="btn-success-ok" class="w-full mt-4 p-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
@@ -383,9 +566,21 @@
             checklistError: document.getElementById('checklist-error'), 
 
             showView(viewName) {
-                Object.values(this.screens).forEach(screen => screen.style.display = 'none');
-                if (this.screens[viewName]) {
-                    this.screens[viewName].style.display = 'block';
+                // Esconde todas
+                Object.values(this.screens).forEach(screen => {
+                    screen.classList.remove('active');
+                    screen.style.display = 'none';
+                });
+
+                // Mostra a desejada
+                const screen = this.screens[viewName];
+                if (screen) {
+                    if (viewName === 'login') {
+                        screen.classList.add('active');
+                        screen.style.display = 'flex'; // força flex
+                    } else {
+                        screen.style.display = 'block';
+                    }
                 }
             },
 
@@ -695,6 +890,40 @@
                 }
             }
         };
+
+        // ======================================================
+        // MODO ESCURO TOGGLE
+        // ======================================================
+        document.querySelectorAll('.dark-mode-btn').forEach(btn => {
+            const sunIcon = btn.querySelector('.sun-icon');
+            const moonIcon = btn.querySelector('.moon-icon');
+            const html = document.documentElement;
+
+            // Atualiza ícones com base no estado atual
+            const updateIcons = () => {
+                if (html.classList.contains('dark')) {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            };
+
+            // Carrega preferência
+            if (localStorage.getItem('darkMode') === 'true') {
+                html.classList.add('dark');
+            }
+            updateIcons();
+
+            // Evento de clique
+            btn.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                const isDark = html.classList.contains('dark');
+                localStorage.setItem('darkMode', isDark);
+                updateIcons();
+            });
+        });
         
         // ======================================================
         // 4. INICIALIZAÇÃO DO APP
