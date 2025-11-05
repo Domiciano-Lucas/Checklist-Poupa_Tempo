@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist Poupa Tempo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+
+    <style>
+        /* (CSS da v4/v10 - Sem alterações) */
+        body { font-family: 'Inter', sans-serif; }
+        .hidden-screen { display: none; }
+        .conditional-field { display: none; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        .spinner-small {
+            width: 20px;
+            height: 20px;
+            border-width: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 antialiased">
+
+    <!-- (HTML da v10/v11 - Sem alterações) -->
+    
+    <!-- 1. TELA DE CARREGAMENTO INICIAL -->
+    <div id="loading-screen" class="flex items-center justify-center h-screen bg-white">
+        <div class="spinner"></div>
+        <p class="ml-3 text-gray-700">Carregando...</p>
+    </div>
+
+    <!-- 2. TELA DE LOGIN -->
+    <div id="login-screen" class="hidden-screen min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
+            <h1 class="text-3xl font-bold text-blue-800 text-center mb-6">Checklist Poupa Tempo</h1>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="login-email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                    <input type="password" id="login-password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div id="login-error" class="text-red-600 text-sm text-center mb-4 hidden-screen"></div>
+                <button type="submit" id="btn-login" class="w-full flex justify-center items-center py-3 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-md hover:bg-blue-700 transition duration-300">
+                    <span class="spinner-small spinner hidden-screen mr-2"></span>
+                    Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. TELA DO TÉCNICO (CHECKLIST) -->
+    <div id="app-screen-tecnico" class="hidden-screen max-w-lg mx-auto p-4 bg-white min-h-screen shadow-lg">
+        <header class="mb-6 pb-4 border-b border-gray-200 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-800">Checklist Técnico</h1>
+                <div class="mt-2 text-sm text-gray-600">
+                    <p>Técnico: <span id="user-name-display" class="font-medium text-gray-900">...</span></p>
+                    <p>Unidade: <span id="unidade-display" class="font-medium text-gray-900">...</span></p>
+                </div>
+            </div>
+            <button id="btn-logout-tecnico" class="text-sm text-red-600 hover:underline">Sair</button>
+        </header>
+
+        <!-- 3.1. TELA DE SELEÇÃO (Abertura / Fechamento) -->
+        <div id="selection-view">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Iniciar Novo Checklist</h2>
+            <div class="flex flex-col space-y-4">
+                <button id="btn-abertura" class="w-full text-left p-6 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition">
+                    <h3 class="text-lg font-bold">ABERTURA</h3>
+                    <p class="text-sm opacity-90">Iniciar o checklist de abertura da unidade.</p>
+                </button>
+                <button id="btn-fechamento" class="w-full text-left p-6 bg-gray-700 text-white rounded-lg shadow-md hover:bg-gray-800 transition">
+                    <h3 class="text-lg font-bold">FECHAMENTO</h3>
+                    <p class="text-sm opacity-90">Iniciar o checklist de fechamento da unidade.</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3.2. TELA DE PREENCHIMENTO (Checklist) -->
+        <div id="checklist-view" class="hidden-screen">
+            <button id="btn-voltar" class="mb-4 text-sm text-blue-600 hover:underline">&larr; Voltar para seleção</button>
+            <h2 id="checklist-title" class="text-2xl font-semibold mb-6 text-gray-800"></h2>
+            
+            <form id="checklist-form" class="space-y-6">
+                
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">1. Qual o status dos Computadores?</legend>
+                    <div class="mt-2 space-y-2">
+                        <label><input type="radio" name="item_computadores" value="ligados" class="mr-2" required> Ligados</label><br>
+                        <label><input type="radio" name="item_computadores" value="desligados" class="mr-2"> Desligados</label><br>
+                        <label><input type="radio" name="item_computadores" value="outra" class="mr-2"> Outra</label>
+                    </div>
+                </fieldset>
+
+                <fieldset id="conditional_computadores" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_computadores_motivo">1a. Motivo (Computadores)</legend>
+                    <select id="item_computadores_motivo" name="item_computadores_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="na" selected>Selecione o problema...</option>
+                        <option value="windows_corrompeu">Windows Corrompeu</option>
+                        <option value="nao_liga">Não Liga</option>
+                        <option value="tela_quebrada">Tela Quebrada</option>
+                        <option valuea="sem_rede">Sem Rede</option>
+                        <option value="outros">Outros (Descrever em Pendências)</option>
+                    </select>
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">2. Contagem de Equipamentos está correta?</legend>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex-1"><input type="radio" name="item_contagem" value="sim" class="mr-2" required> Sim</label>
+                        <label class="flex-1"><input type="radio" name="item_contagem" value="nao" class="mr-2"> Não</label>
+                    </div>
+                </fieldset>
+                
+                <fieldset id="conditional_contagem" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_contagem_motivo">2a. Motivo (Contagem)</legend>
+                    <select id="item_contagem_motivo" name="item_contagem_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="na" selected>Selecione o problema...</option>
+                        <option value="faltando_equip">Faltando Equipamento</option>
+                        <option value="equip_sobrando">Equipamento Sobrando</option>
+                        <option value="equip_trocado">Equipamento Trocado</option>
+                        <option value="outros">Outros (Descrever em Pendências)</option>
+                    </select>
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">3. O Totem permanece ligado?</legend>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex-1"><input type="radio" name="item_totem_ligado" value="sim" class="mr-2" required> Sim</label>
+                        <label class="flex-1"><input type="radio" name="item_totem_ligado" value="nao" class="mr-2"> Não</label>
+                    </div>
+                </fieldset>
+
+                <fieldset id="conditional_totem" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_totem_motivo">3a. Motivo da Falha (Totem)</legend>
+                    <select id="item_totem_motivo" name="item_totem_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="na" selected>Selecione o problema...</option>
+                        <option value="windows_corrompeu">Windows Corrompeu</option>
+                        <option value="equipamento_molhado">Equipamento Molhado</option>
+                        <option value="painel_desligado">Painel Desligado</option>
+                        <option value="nao_liga">Não Liga</option>
+                        <option value="outros">Outros (Descrever em Pendências)</option>
+                    </select>
+                </fieldset>
+                
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">4. O Tablet corporativo está OK?</legend>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex-1"><input type="radio" name="item_tablet_corp_ok" value="sim" class="mr-2" required> Sim</label>
+                        <label class="flex-1"><input type="radio" name="item_tablet_corp_ok" value="nao" class="mr-2"> Não</label>
+                    </div>
+                </fieldset>
+                
+                <fieldset id="conditional_tablet_corp" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_tablet_corp_motivo">4a. Motivo (Tablet Corp.)</legend>
+                    <select id="item_tablet_corp_motivo" name="item_tablet_corp_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="na" selected>Selecione o problema...</option>
+                        <option value="nao_liga">Não Liga</option>
+                        <option value="tela_trincada">Tela Trincada</option>
+                        <option value="nao_carrega">Não Carrega</option>
+                        <option value="faltando">Faltando</option>
+                        <option value="outros">Outros (Descrever em Pendências)</option>
+                    </select>
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_tablet_corp_posse">5. O Tablet Ficou na posse de quem?</legend>
+                    <input type="text" id="item_tablet_corp_posse" name="item_tablet_corp_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">6. O Celular corporativo está OK?</legend>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex-1"><input type="radio" name="item_celular_corp_ok" value="sim" class="mr-2" required> Sim</label>
+                        <label class="flex-1"><input type="radio" name="item_celular_corp_ok" value="nao" class="mr-2"> Não</label>
+                    </div>
+                </fieldset>
+
+                <fieldset id="conditional_celular_corp" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_corp_motivo">6a. Motivo (Celular Corp.)</legend>
+                    <select id="item_celular_corp_motivo" name="item_celular_corp_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="na" selected>Selecione o problema...</option>
+                        <option value="nao_liga">Não Liga</option>
+                        <option value="tela_trincada">Tela Trincada</option>
+                        <option value="nao_carrega">Não Carrega</option>
+                        <option value="faltando">Faltando</option>
+                        <option value="outros">Outros (Descrever em Pendências)</option>
+                    </select>
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_corp_posse">7. O Celular Ficou na posse de quem?</legend>
+                    <input type="text" id="item_celular_corp_posse" name="item_celular_corp_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">8. O Celular corporativo TIC está OK?</legend>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex-1"><input type="radio" name="item_celular_tic_ok" value="sim" class="mr-2" required> Sim</label>
+                        <label class="flex-1"><input type="radio" name="item_celular_tic_ok" value="nao" class="mr-2"> Não</label>
+                    </div>
+                </fieldset>
+                
+                <fieldset id="conditional_celular_tic" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_tic_motivo">8a. Motivo (Celular TIC)</legend>
+                    <select id="item_celular_tic_motivo" name="item_celular_tic_motivo" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="na" selected>Selecione o problema...</option>
+                        <option value="nao_liga">Não Liga</option>
+                        <option value="tela_trincada">Tela Trincada</option>
+                        <option value="nao_carrega">Não Carrega</option>
+                        <option value="faltando">Faltando</option>
+                        <option value="outros">Outros (Descrever em Pendências)</option>
+                    </select>
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_celular_tic_posse">9. O Celular TIC Ficou na posse de quem?</legend>
+                    <input type="text" id="item_celular_tic_posse" name="item_celular_tic_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">10. Qual o status das salas?</legend>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex-1"><input type="radio" name="item_salas_status" value="trancadas" class="mr-2" required> Trancadas (Fechamento)</label>
+                        <label class="flex-1"><input type="radio" name="item_salas_status" value="abertas" class="mr-2"> Abertas (Abertura)</label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_salas_quais">11. Quais salas estão Trancadas ou Abertas?</legend>
+                    <input type="text" id="item_salas_quais" name="item_salas_quais" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ex: Sala 1, Sala 2, ADM">
+                </fieldset>
+
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_chaves_posse">12. Quem ficou de posse das Chaves?</legend>
+                    <input type="text" id="item_chaves_posse" name="item_chaves_posse" required class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta">
+                </fieldset>
+                
+                <fieldset class="p-4 border rounded-lg bg-gray-50">
+                    <legend class="text-md font-semibold text-gray-700 px-1" for="item_pendencia">13. Pendências / Observações</legend>
+                    <label for="item_pendencia" class="text-sm text-gray-500">Descreva aqui problemas de "Outros" ou informe o nº do chamado aberto.</label>
+                    <textarea id="item_pendencia" name="item_pendencia" rows="4" class="mt-2 block w-full p-3 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Insira sua resposta"></textarea>
+                </fieldset>
+
+                <!-- Div de Erro da Validação -->
+                <div id="checklist-error" class="text-red-600 text-sm text-center mb-4 hidden-screen"></div>
+
+                <div class="mt-8 mb-4">
+                    <button type="submit" id="btn-salvar" class="w-full flex justify-center items-center p-4 bg-green-600 text-white rounded-lg shadow-md font-semibold hover:bg-green-700">
+                        <span class="spinner-small spinner hidden-screen mr-2"></span>
+                        Salvar Checklist
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. TELA DO GESTOR (DASHBOARD) -->
+    <div id="app-screen-gestor" class="hidden-screen max-w-4xl mx-auto p-6 bg-white min-h-screen shadow-lg">
+        <header class="mb-6 pb-4 border-b border-gray-200 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-blue-800">Painel do Gestor</h1>
+                <p class="mt-1 text-sm text-gray-600">Olá, <span id="gestor-name-display" class="font-medium text-gray-900">...</span></p>
+            </div>
+            <button id="btn-logout-gestor" class="text-sm text-red-600 hover:underline">Sair</button>
+        </header>
+        <div>
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Dashboard (PowerBI)</h2>
+            <p class="text-gray-600 mb-4">
+                Este é o espaço onde o dashboard do PowerBI será incorporado.
+            </p>
+            <div class="w-full h-96 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                (Espaço reservado para o iFrame do PowerBI)
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MENSAGEM DE SUCESSO (Modal) -->
+    <div id="success-message" class="hidden-screen fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <h3 class="text-xl font-semibold mt-4 mb-2 text-gray-800">Salvo com Sucesso!</h3>
+            <button id="btn-success-ok" class="w-full mt-4 p-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">
+                OK
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ====================================================== -->
+    <!-- JAVASCRIPT (Módulo Refatorado v12 - Correção de Submit) -->
+    <!-- ====================================================== -->
+    <script type="module">
+        // Importações do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            serverTimestamp,
+            doc,
+            getDoc,
+            setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ======================================================
+        // 1. CONFIGURAÇÃO FIREBASE
+        // ======================================================
+        const firebaseConfig = {
+        apiKey: "AIzaSyCV97jMnn51ilgF5j-fpdTzR-c9MY19B-k",
+        authDomain: "checklist-poupatempo.firebaseapp.com",
+        projectId: "checklist-poupatempo",
+        storageBucket: "checklist-poupatempo.firebasestorage.app",
+        messagingSenderId: "470875876173",
+        appId: "1:470875876173:web:b5138e359bacf0e091a504"
+        };
+        
+        // ======================================================
+        // 2. MÓDULOS DE SERVIÇO (A NOVA ARQUITETURA)
+        // ======================================================
+
+        /**
+         * AppCore: Guarda o estado central e os serviços do Firebase.
+         */
+        const AppCore = {
+            db: null,
+            auth: null,
+            currentUser: null, // { uid, nome, unidadeNome }
+            currentChecklistType: null,
+
+            init() {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    AppCore.db = getFirestore(app);
+                    AppCore.auth = getAuth(app);
+                    setLogLevel('debug');
+                    console.log("Firebase inicializado com sucesso.");
+                    return true;
+                } catch (error) {
+                    console.error("Erro na inicialização do Firebase:", error);
+                    UIService.showLoginError(`Erro fatal: ${error.message}`);
+                    return false;
+                }
+            }
+        };
+
+        /**
+         * UIService: Controla a visibilidade das telas e elementos da UI.
+         */
+        const UIService = {
+            screens: {
+                loading: document.getElementById('loading-screen'),
+                login: document.getElementById('login-screen'),
+                tecnico: document.getElementById('app-screen-tecnico'),
+                gestor: document.getElementById('app-screen-gestor')
+            },
+            selectionView: document.getElementById('selection-view'),
+            checklistView: document.getElementById('checklist-view'),
+            successMessage: document.getElementById('success-message'),
+            loginError: document.getElementById('login-error'),
+            checklistError: document.getElementById('checklist-error'), 
+
+            showView(viewName) {
+                Object.values(this.screens).forEach(screen => screen.style.display = 'none');
+                if (this.screens[viewName]) {
+                    this.screens[viewName].style.display = 'block';
+                }
+            },
+
+            showTecnicoView(viewName) {
+                this.selectionView.style.display = 'none';
+                this.checklistView.style.display = 'none';
+                if (viewName === 'selection') {
+                    this.selectionView.style.display = 'block';
+                } else if (viewName === 'checklist') {
+                    this.checklistView.style.display = 'block';
+                }
+            },
+
+            updateUserInfo(user) {
+                if (user.role === 'tecnico') {
+                    document.getElementById('user-name-display').textContent = user.nome;
+                    document.getElementById('unidade-display').textContent = user.unidadeNome;
+                } else if (user.role === 'gestor') {
+                    document.getElementById('gestor-name-display').textContent = user.nome;
+                }
+            },
+
+            toggleSpinner(buttonId, show) {
+                const btn = document.getElementById(buttonId);
+                if (btn) {
+                    const spinner = btn.querySelector('.spinner-small');
+                    btn.disabled = show;
+                    if (spinner) {
+                        spinner.style.display = show ? 'inline-block' : 'none';
+                    }
+                }
+            },
+            
+            showLoginError(message) {
+                this.loginError.textContent = message;
+                this.loginError.style.display = 'block';
+            },
+            hideLoginError() {
+                this.loginError.style.display = 'none';
+            },
+
+            showChecklistError(message) {
+                this.checklistError.textContent = message;
+                this.checklistError.style.display = 'block';
+            },
+            hideChecklistError() {
+                this.checklistError.style.display = 'none';
+            },
+            
+            setupConditionalLogic() {
+                const setupListener = (radioName, triggerValue, fieldId) => {
+                    const radios = document.querySelectorAll(`input[name="${radioName}"]`);
+                    const field = document.getElementById(fieldId);
+                    
+                    radios.forEach(radio => {
+                        radio.addEventListener('change', (event) => {
+                            if (event.target.value === triggerValue) {
+                                field.style.display = 'block';
+                            } else {
+                                field.style.display = 'none';
+                            }
+                        });
+                    });
+                };
+
+                setupListener('item_computadores', 'outra', 'conditional_computadores');
+                setupListener('item_contagem', 'nao', 'conditional_contagem');
+                setupListener('item_totem_ligado', 'nao', 'conditional_totem');
+                setupListener('item_tablet_corp_ok', 'nao', 'conditional_tablet_corp');
+                setupListener('item_celular_corp_ok', 'nao', 'conditional_celular_corp');
+                setupListener('item_celular_tic_ok', 'nao', 'conditional_celular_tic');
+            },
+
+            resetConditionalFields() {
+                document.querySelectorAll('.conditional-field').forEach(field => {
+                    field.style.display = 'none';
+                });
+            }
+        };
+
+        /**
+         * AuthService: Cuida de toda a lógica de autenticação.
+         */
+        const AuthService = {
+            listenForAuthChanges() {
+                onAuthStateChanged(AppCore.auth, async (user) => {
+                    if (user) {
+                        UIService.showView('loading');
+                        await this.checkUserRole(user.uid);
+                    } else {
+                        AppCore.currentUser = null;
+                        UIService.showView('login');
+                    }
+                });
+            },
+
+            async checkUserRole(uid) {
+                try {
+                    const userDocRef = doc(AppCore.db, "usuarios", uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const userRole = userData.role;
+
+                        if (userRole === 'tecnico') {
+                            AppCore.currentUser = {
+                                uid: uid,
+                                nome: userData.nome,
+                                unidadeNome: userData.unidadeNome,
+                                role: 'tecnico'
+                            };
+                            UIService.updateUserInfo(AppCore.currentUser);
+                            UIService.showView('tecnico');
+                            UIService.showTecnicoView('selection');
+                        } else if (userRole === 'gestor') {
+                            AppCore.currentUser = {
+                                uid: uid,
+                                nome: userData.nome,
+                                unidadeNome: null,
+                                role: 'gestor'
+                            };
+                            UIService.updateUserInfo(AppCore.currentUser);
+                            UIService.showView('gestor');
+                        } else {
+                            throw new Error("Cargo de usuário desconhecido.");
+                        }
+                    } else {
+                        throw new Error("Dados de usuário não encontrados no Firestore.");
+                    }
+                } catch (error) {
+                    console.error("Erro ao verificar cargo:", error);
+                    UIService.showLoginError(`Erro de permissão: ${error.message}`);
+                    UIService.showView('login');
+                    await this.handleLogout(); 
+                }
+            },
+
+            async handleLogin(event) {
+                event.preventDefault();
+                UIService.toggleSpinner('btn-login', true);
+                UIService.hideLoginError();
+                
+                const loginForm = document.getElementById('login-form');
+                const email = loginForm.email.value;
+                const password = loginForm.password.value;
+
+                try {
+                    await signInWithEmailAndPassword(AppCore.auth, email, password);
+                } catch (error) {
+                    UIService.showLoginError("Email ou senha inválidos.");
+                } finally {
+                    UIService.toggleSpinner('btn-login', false);
+                }
+            },
+
+            async handleLogout() {
+                try {
+                    await signOut(AppCore.auth);
+                } catch (error) {
+                    console.error("Erro ao sair:", error);
+                }
+            }
+        };
+
+        /**
+         * ChecklistService: Cuida da lógica de preenchimento e salvamento.
+         */
+        const ChecklistService = {
+            start(type) {
+                AppCore.currentChecklistType = type;
+                document.getElementById('checklist-title').textContent = `Checklist de ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                document.getElementById('checklist-form').reset();
+                UIService.resetConditionalFields();
+                UIService.showTecnicoView('checklist');
+            },
+
+            getFormData() {
+                const formData = new FormData(document.getElementById('checklist-form'));
+                const items = {
+                    computadores: formData.get('item_computadores'),
+                    computadoresMotivo: formData.get('item_computadores_motivo'),
+                    contagemEquip: formData.get('item_contagem'),
+                    contagemMotivo: formData.get('item_contagem_motivo'),
+                    totemLigado: formData.get('item_totem_ligado'),
+                    totemMotivo: formData.get('item_totem_motivo'),
+                    tabletCorpOk: formData.get('item_tablet_corp_ok'),
+                    tabletCorpMotivo: formData.get('item_tablet_corp_motivo'),
+                    tabletCorpPosse: formData.get('item_tablet_corp_posse'),
+                    celularCorpOk: formData.get('item_celular_corp_ok'),
+                    celularCorpMotivo: formData.get('item_celular_corp_motivo'),
+                    celularCorpPosse: formData.get('item_celular_corp_posse'),
+                    celularTicOk: formData.get('item_celular_tic_ok'),
+                    celularTicMotivo: formData.get('item_celular_tic_motivo'),
+                    celularTicPosse: formData.get('item_celular_tic_posse'),
+                    salasStatus: formData.get('item_salas_status'),
+                    salasQuais: formData.get('item_salas_quais'),
+                    chavesPosse: formData.get('item_chaves_posse'),
+                    pendencia: formData.get('item_pendencia')
+                };
+                return items;
+            },
+
+            async handleSubmit(event) {
+                event.preventDefault();
+                UIService.toggleSpinner('btn-salvar', true);
+                UIService.hideChecklistError(); 
+
+                const form = document.getElementById('checklist-form');
+                if (!form.checkValidity()) {
+                    UIService.showChecklistError("Erro: Por favor, preencha todos os campos obrigatórios.");
+                    UIService.toggleSpinner('btn-salvar', false);
+                    return; 
+                }
+
+                // *** CORREÇÃO v12: 'this' estava incorreto aqui. ***
+                // Agora 'this' está 'amarrado' (bound) corretamente.
+                const items = this.getFormData(); 
+
+                let validationError = null;
+
+                if (items.computadores === 'outra' && items.computadoresMotivo === 'na') {
+                    validationError = "Por favor, selecione o motivo para 'Computadores'.";
+                } else if (items.contagemEquip === 'nao' && items.contagemMotivo === 'na') {
+                    validationError = "Por favor, selecione o motivo para 'Contagem de Equipamentos'.";
+                } else if (items.totemLigado === 'nao' && items.totemMotivo === 'na') {
+                    validationError = "Por favor, selecione o motivo da falha do 'Totem'.";
+                } else if (items.tabletCorpOk === 'nao' && items.tabletCorpMotivo === 'na') {
+                    validationError = "Por favor, selecione o motivo para 'Tablet Corporativo'.";
+                } else if (items.celularCorpOk === 'nao' && items.celularCorpMotivo === 'na') {
+                    validationError = "Por favor, selecione o motivo para 'Celular Corporativo'.";
+                } else if (items.celularTicOk === 'nao' && items.celularTicMotivo === 'na') {
+                    validationError = "Por favor, selecione o motivo para 'Celular TIC'.";
+                }
+
+                if (validationError) {
+                    UIService.showChecklistError(validationError);
+                    UIService.toggleSpinner('btn-salvar', false);
+                    return; 
+                }
+                
+                try {
+                    const pendenciaTexto = items.pendencia || "";
+                    const possuiOcorrencia = (
+                        items.computadores === 'outra' || items.contagemEquip === 'nao' ||
+                        items.totemLigado === 'nao' || items.tabletCorpOk === 'nao' ||
+                        items.celularCorpOk === 'nao' || items.celularTicOk === 'nao' ||
+                        (pendenciaTexto.trim().length > 3)
+                    );
+
+                    const checklistDocument = {
+                        tecnicoId: AppCore.currentUser.uid,
+                        tecnicoNome: AppCore.currentUser.nome,
+                        unidadeNome: AppCore.currentUser.unidadeNome,
+                        tipo: AppCore.currentChecklistType,
+                        timestamp: serverTimestamp(),
+                        dataReferencia: new Date().toISOString().split('T')[0],
+                        possuiOcorrencia: possuiOcorrencia,
+                        itens: items
+                    };
+
+                    await addDoc(collection(AppCore.db, "checklists"), checklistDocument);
+                    
+                    UIService.successMessage.style.display = 'flex';
+
+                } catch (error) {
+                    console.error("Erro ao salvar o checklist: ", error);
+                    UIService.showChecklistError("Erro ao salvar no banco de dados.");
+                } finally {
+                    UIService.toggleSpinner('btn-salvar', false);
+                }
+            }
+        };
+        
+        /**
+         * EventListeners: Ponto central para ligar UI (HTML) com a Lógica (JS).
+         */
+        const EventListeners = {
+            init() {
+                try {
+                    // Login / Logout
+                    document.getElementById('login-form').addEventListener('submit', AuthService.handleLogin);
+                    document.getElementById('btn-logout-tecnico').addEventListener('click', AuthService.handleLogout);
+                    document.getElementById('btn-logout-gestor').addEventListener('click', AuthService.handleLogout);
+
+                    // Navegação Técnico
+                    document.getElementById('btn-abertura').addEventListener('click', () => ChecklistService.start('abertura'));
+                    document.getElementById('btn-fechamento').addEventListener('click', () => ChecklistService.start('fechamento'));
+                    document.getElementById('btn-voltar').addEventListener('click', () => UIService.showTecnicoView('selection'));
+
+                    // Formulário
+                    // *** CORREÇÃO v12: 'bind(ChecklistService)' foi adicionado aqui ***
+                    document.getElementById('checklist-form').addEventListener('submit', ChecklistService.handleSubmit.bind(ChecklistService));
+                    
+                    document.getElementById('btn-success-ok').addEventListener('click', () => {
+                        UIService.successMessage.style.display = 'none';
+                        UIService.showTecnicoView('selection');
+                    });
+                    
+                    // Lógica condicional
+                    UIService.setupConditionalLogic();
+                    
+                    console.log("Listeners de eventos inicializados.");
+                } catch(error) {
+                    console.error("Erro ao iniciar listeners:", error);
+                    UIService.showLoginError("Erro ao carregar a interface. Recarregue a página.");
+                }
+            }
+        };
+        
+        // ======================================================
+        // 4. INICIALIZAÇÃO DO APP
+        // ======================================================
+        if (AppCore.init()) {
+            EventListeners.init();
+            AuthService.listenForAuthChanges();
+        } else {
+            UIService.showView('login');
+        }
+
+    </script>
+</body>
+</html>
