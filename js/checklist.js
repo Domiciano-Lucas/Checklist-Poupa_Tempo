@@ -49,10 +49,10 @@ export const ChecklistService = {
             celularTicOk: formData.get('item_celular_tic_ok'),
             celularTicMotivo: formData.get('item_celular_tic_motivo'),
             celularTicPosse: formData.get('item_celular_tic_posse'),
-            salaMedica: formData.get('item_sala_medica'),
-            salaReuniao: formData.get('item_sala_reuniao'),
-            salaTeorico: formData.get('item_sala_teorico'),
-            salaAdm: formData.get('item_sala_adm'),
+            salaMedica: formData.get('item_sala_medica'), // Não é mais 'required'
+            salaReuniao: formData.get('item_sala_reuniao'), // Não é mais 'required'
+            salaTeorico: formData.get('item_sala_teorico'), // Não é mais 'required'
+            salaAdm: formData.get('item_sala_adm'), // Não é mais 'required'
             chavesPosse: formData.get('item_chaves_posse'),
             pendencia: formData.get('item_pendencia')
         };
@@ -65,29 +65,34 @@ export const ChecklistService = {
         UIService.hideChecklistError(); 
 
         const form = document.getElementById('checklist-form');
-        if (!form.checkValidity()) {
-            UIService.showChecklistError("Erro: Por favor, preencha todos os campos obrigatórios.");
-            UIService.toggleSpinner('btn-salvar', false);
-            return; 
-        }
-
         const items = this.getFormData(); 
-
         let validationError = null;
 
-        if (items.computadores === 'outra' && items.computadoresMotivo === 'na') {
-            validationError = "Por favor, selecione o motivo para 'Computadores'.";
-        } else if (items.contagemEquip === 'nao' && items.contagemMotivo === 'na') {
-            validationError = "Por favor, selecione o motivo para 'Contagem de Equipamentos'.";
-        } else if (items.totemLigado === 'nao' && items.totemMotivo === 'na') {
-            validationError = "Por favor, selecione o motivo da falha do 'Totem'.";
-        } else if (items.tabletCorpOk === 'nao' && items.tabletCorpMotivo === 'na') {
-            validationError = "Por favor, selecione o motivo para 'Tablet Corporativo'.";
-        } else if (items.celularCorpOk === 'nao' && items.celularCorpMotivo === 'na') {
-            validationError = "Por favor, selecione o motivo para 'Celular Corporativo'.";
-        } else if (items.celularTicOk === 'nao' && items.celularTicMotivo === 'na') {
-            validationError = "Por favor, selecione o motivo para 'Celular TIC'.";
+        // ===== VALIDAÇÃO CORRIGIDA =====
+
+        // 1. Usa o checkValidity() do navegador para todos os campos 'required' VISÍVEIS.
+        // (Como as Salas não são mais 'required', isso não vai mais falhar).
+        if (!form.checkValidity()) {
+            validationError = "Erro: Por favor, preencha todos os campos obrigatórios.";
         }
+        
+        // 2. Validação CONDICIONAL (O que você pediu)
+        if (!validationError) {
+            if (items.computadores === 'outra' && items.computadoresMotivo === 'na') {
+                validationError = "Por favor, selecione o motivo para 'Computadores'.";
+            } else if (items.contagemEquip === 'nao' && items.contagemMotivo === 'na') {
+                validationError = "Por favor, selecione o motivo para 'Contagem de Equipamentos'.";
+            } else if (items.totemLigado === 'nao' && items.totemMotivo === 'na') {
+                validationError = "Por favor, selecione o motivo da falha do 'Totem'.";
+            } else if (items.tabletCorpOk === 'nao' && items.tabletCorpMotivo === 'na') {
+                validationError = "Por favor, selecione o motivo para 'Tablet Corporativo'.";
+            } else if (items.celularCorpOk === 'nao' && items.celularCorpMotivo === 'na') {
+                validationError = "Por favor, selecione o motivo para 'Celular Corporativo'.";
+            } else if (items.celularTicOk === 'nao' && items.celularTicMotivo === 'na') {
+                validationError = "Por favor, selecione o motivo para 'Celular TIC'.";
+            }
+        }
+        // ===== FIM DA VALIDAÇÃO =====
 
         if (validationError) {
             UIService.showChecklistError(validationError);
@@ -101,7 +106,7 @@ export const ChecklistService = {
                 items.computadores === 'outra' || items.contagemEquip === 'nao' ||
                 items.totemLigado === 'nao' || items.tabletCorpOk === 'nao' ||
                 items.celularCorpOk === 'nao' || items.celularTicOk === 'nao' ||
-                items.salaMedica === 'opt2' || items.salaReuniao === 'opt2' ||
+                items.salaMedica === 'opt2' || items.salaReuniao === 'opt2' || // 'opt2' é o estado "incorreto"
                 items.salaTeorico === 'opt2' || items.salaAdm === 'opt2' ||
                 (pendenciaTexto.trim().length > 3)
             );

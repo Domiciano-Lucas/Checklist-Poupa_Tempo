@@ -13,9 +13,10 @@ const EventListeners = {
     init() {
         try {
             // Login / Logout
-            document.getElementById('login-form').addEventListener('submit', AuthService.handleLogin);
-            document.getElementById('btn-logout-tecnico').addEventListener('click', AuthService.handleLogout);
-            document.getElementById('btn-logout-gestor').addEventListener('click', AuthService.handleLogout);
+            // ===== CORREÇÃO APLICADA AQUI (.bind(AuthService)) =====
+            document.getElementById('login-form').addEventListener('submit', AuthService.handleLogin.bind(AuthService));
+            document.getElementById('btn-logout-tecnico').addEventListener('click', AuthService.handleLogout.bind(AuthService));
+            document.getElementById('btn-logout-gestor').addEventListener('click', AuthService.handleLogout.bind(AuthService));
 
             // Navegação Técnico
             document.getElementById('btn-abertura').addEventListener('click', () => ChecklistService.start('abertura'));
