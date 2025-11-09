@@ -4,136 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checklist Poupa Tempo</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs -->
+    
+    <link rel="stylesheet" href="css/style.css">
+
     <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
-
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .hidden-screen { display: none; }
-        .conditional-field { display: none; }
-
-        /* Força o login a ocupar toda a tela */
-        #login-screen {
-            display: none; /* será controlado pelo JS */
-        }
-        #login-screen.active {
-            display: flex !important;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #2563eb;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        .spinner-small {
-            width: 20px;
-            height: 20px;
-            border-width: 2px;
-        }
-
-        /* TOGGLE SWITCH - 100% FUNCIONAL NO HTML */
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-        .toggle-track {
-            position: relative;
-            width: 56px;
-            height: 32px;
-            background-color: #d1d5db;
-            border-radius: 9999px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-            transition: background-color 0.3s;
-        }
-        .toggle-dot {
-            position: absolute;
-            left: 4px;
-            top: 4px;
-            width: 24px;
-            height: 24px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        /* ESTADO ATIVADO */
-        #dark-mode-toggle:checked + .toggle-container .toggle-track {
-            background-color: #2563eb;
-        }
-        #dark-mode-toggle:checked + .toggle-container .toggle-dot {
-            transform: translateX(24px);
-            background-color: #1f2937;
-        }
-
-        /* MODO ESCURO GLOBAL */
-        .dark {
-            background-color: #111827 !important;
-            color: #f3f4f6 !important;
-        }
-        .dark * { transition: background-color 0.3s, color 0.3s, border-color 0.3s !important; }
-        .dark .bg-white { background-color: #1f2937 !important; }
-        .dark .bg-gray-50 { background-color: #111827 !important; }
-        .dark .bg-gray-100 { background-color: #374151 !important; }
-        .dark .bg-gray-200 { background-color: #4b5563 !important; }
-        .dark .bg-blue-600 { background-color: #2563eb !important; }
-        .dark .bg-red-600 { background-color: #dc2626 !important; }
-        .dark .bg-green-600 { background-color: #16a34a !important; }
-        .dark .text-gray-800 { color: #e5e7eb !important; }
-        .dark .text-gray-700 { color: #d1d5db !important; }
-        .dark .text-gray-600 { color: #9ca3af !important; }
-        .dark .border-gray-200 { border-color: #374151 !important; }
-        .dark input, .dark select, .dark textarea {
-            background-color: #374151 !important;
-            color: white !important;
-            border-color: #4b5563 !important;
-        }
-        .dark input::placeholder { color: #9ca3af !important; }
-    </style>
 </head>
 <body class="bg-white antialiased transition-colors duration-300">
     
-    <!-- (HTML da v10/v11 - Sem alterações) -->
-    
-    <!-- 1. TELA DE CARREGAMENTO INICIAL -->
     <div id="loading-screen" class="flex items-center justify-center h-screen bg-white">
         <div class="spinner"></div>
         <p class="ml-3 text-gray-700">Carregando...</p>
     </div>
-
-    <!-- 2. TELA DE LOGIN -->
     <div id="login-screen" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-50 p-4">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
-        <h1 class="text-3xl font-bold text-blue-800 text-center mb-6">Checklist Poupa Tempo</h1>
-        <form id="login-form">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                <input type="password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div id="login-error" class="text-red-600 text-sm text-center mb-4 hidden"></div>
-            <button type="submit" id="btn-login" class="w-full flex items-center justify-center py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 group">
-                <span class="spinner-small spinner hidden mr-3"></span>
-                <span>Entrar</span>
-            </button>
-        </form>
-    </div>
-</div>
 
-    <!-- 3. TELA DO TÉCNICO (CHECKLIST) -->
+        <button class="dark-mode-btn fixed top-6 right-6 p-3 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-lg z-10">
+            <svg class="sun-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-3.05-.293l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM5 11a1 1 0 100-2H4a1 1 0 000 2h1z"/>
+            </svg>
+            <svg class="moon-icon w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+            </svg>
+        </button>
+
+        <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
+            <h1 class="text-3xl font-bold text-blue-800 text-center mb-6">Checklist Poupa Tempo</h1>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                    <input type="password" name="password" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <label for="remember-me" class="flex items-center text-sm text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="remember-me" name="remember-me" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2">Lembrar meu email</span>
+                    </label>
+                </div>
+
+                <div id="login-error" class="text-red-600 text-sm text-center mb-4 hidden"></div>
+                <button type="submit" id="btn-login" class="w-full flex items-center justify-center py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 group">
+                    <span class="spinner-small spinner hidden mr-3"></span>
+                    <span>Entrar</span>
+                </button>
+            </form>
+        </div>
+    </div>
     <div id="app-screen-tecnico" class="hidden-screen max-w-lg mx-auto p-6 bg-white min-h-screen shadow-lg">
+        
         <header class="mb-8 pb-4 border-b border-gray-200 flex justify-between items-start">
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-blue-800">Checklist Técnico</h1>
@@ -142,29 +66,26 @@
                     <p>Unidade: <span id="unidade-display" class="font-medium text-gray-900">...</span></p>
                 </div>
             </div>
-            <!-- BOTÃO MODO ESCURO (TÉCNICO E GESTOR) -->
             <div class="flex items-center gap-6">
             <button class="dark-mode-btn p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-md ml-3">
-                <!-- SOL (MODO CLARO) -->
                 <svg class="sun-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-3.05-.293l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM5 11a1 1 0 100-2H4a1 1 0 000 2h1z"/>
                 </svg>
-                <!-- LUA (MODO ESCURO) -->
                 <svg class="moon-icon w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
                 </svg>
             </button>
-            <!-- BOTÃO SAIR -->
             <button id="btn-logout-tecnico" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-lg transition transform hover:scale-105 active:scale-95">
                 Sair
             </button>
         </header>
 
-        <!-- 3.1. TELA DE SELEÇÃO (Abertura / Fechamento) -->
         <div id="selection-view" class="text-center">
             <h2 class="text-xl font-bold text-gray-800 mb-8">Iniciar Novo Checklist</h2>
             <div class="space-y-6">
-                <button id="btn-abertura" class="w-full text-left p-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xl transition transform hover:scale-105 active:scale-100 flex items-center justify-between group">
+                
+                <button id="btn-abertura" class="w-full text-left p-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xl transition transform hover:scale-105 active:scale-100 flex items-center justify-between group
+                                                dark:border dark:border-gray-500 dark:hover:border-gray-400">
                     <div>
                         <h3 class="text-xl font-bold">ABERTURA</h3>
                         <p class="text-sm opacity-90 mt-1">Iniciar o checklist de abertura da unidade.</p>
@@ -172,7 +93,8 @@
                     <span class="text-3xl group-hover:translate-x-2 transition">→</span>
                 </button>
 
-                <button id="btn-fechamento" class="w-full text-left p-8 bg-gray-700 hover:bg-gray-800 text-white rounded-xl shadow-lg transition transform hover:scale-105 active:scale-100 flex items-center justify-between group">
+                <button id="btn-fechamento" class="w-full text-left p-8 bg-gray-700 hover:bg-gray-800 text-white rounded-xl shadow-lg transition transform hover:scale-105 active:scale-100 flex items-center justify-between group
+                                                dark:bg-gray-600 dark:hover:bg-gray-500 dark:border dark:border-gray-500 dark:hover:border-gray-400">
                     <div>
                         <h3 class="text-xl font-bold">FECHAMENTO</h3>
                         <p class="text-sm opacity-90 mt-1">Iniciar o checklist de fechamento da unidade.</p>
@@ -182,7 +104,6 @@
             </div>
         </div>
 
-        <!-- 3.2. TELA DE PREENCHIMENTO (Checklist) -->
         <div id="checklist-view" class="hidden-screen">
             <button id="btn-voltar" class="mb-6 flex items-center text-blue-600 hover:text-blue-700 transition group">
                 <span class="text-xl mr-1 group-hover:-translate-x-1 transition">←</span>
@@ -209,7 +130,6 @@
                         </label>
                     </div>
                 </fieldset>
-
                 <fieldset id="conditional_computadores" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_computadores_motivo">1a. Motivo (Computadores)</legend>
                     <select id="item_computadores_motivo" name="item_computadores_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
@@ -217,7 +137,7 @@
                         <option value="windows_corrompeu">Windows Corrompeu</option>
                         <option value="nao_liga">Não Liga</option>
                         <option value="tela_quebrada">Tela Quebrada</option>
-                        <option valuea="sem_rede">Sem Rede</option>
+                        <option value="sem_rede">Sem Rede</option>
                         <option value="outros">Outros (Descrever em Pendências)</option>
                     </select>
                 </fieldset>
@@ -235,7 +155,6 @@
                         </label>
                     </div>
                 </fieldset>
-                
                 <fieldset id="conditional_contagem" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_contagem_motivo">2a. Motivo (Contagem)</legend>
                     <select id="item_contagem_motivo" name="item_contagem_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
@@ -260,7 +179,6 @@
                         </label>
                     </div>
                 </fieldset>
-
                 <fieldset id="conditional_totem" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_totem_motivo">3a. Motivo da Falha (Totem)</legend>
                     <select id="item_totem_motivo" name="item_totem_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
@@ -274,7 +192,7 @@
                 </fieldset>
                 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">4. O Tablet corporativo está Funcionando normalmente?</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">4. O Tablet corporativo está Funcionando normally?</legend>
                     <div class="flex gap-4">
                         <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-green-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-green-400">
                             <input type="radio" name="item_tablet_corp_ok" value="sim" class="sr-only" required>
@@ -286,7 +204,6 @@
                         </label>
                     </div>
                 </fieldset>
-                
                 <fieldset id="conditional_tablet_corp" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_tablet_corp_motivo">4a. Motivo (Tablet Corp.)</legend>
                     <select id="item_tablet_corp_motivo" name="item_tablet_corp_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
@@ -300,8 +217,17 @@
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_tablet_corp_posse">5. O Tablet Ficou na posse de quem?</legend>
-                    <input type="text" id="item_tablet_corp_posse" name="item_tablet_corp_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">5. O Tablet Ficou na posse de qual SETOR?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_tablet_corp_posse" value="adm" class="sr-only" required>
+                            <span class="font-bold text-lg">ADM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_tablet_corp_posse" value="ti" class="sr-only" required>
+                            <span class="font-bold text-lg">TI</span>
+                        </label>
+                    </div>
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -317,7 +243,6 @@
                         </label>
                     </div>
                 </fieldset>
-
                 <fieldset id="conditional_celular_corp" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_corp_motivo">6a. Motivo (Celular Corp.)</legend>
                     <select id="item_celular_corp_motivo" name="item_celular_corp_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
@@ -331,8 +256,17 @@
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_corp_posse">7. O Celular Ficou na posse de quem?</legend>
-                    <input type="text" id="item_celular_corp_posse" name="item_celular_corp_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">7. O Celular Ficou na posse de qual SETOR?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_celular_corp_posse" value="adm" class="sr-only" required>
+                            <span class="font-bold text-lg">ADM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_celular_corp_posse" value="ti" class="sr-only" required>
+                            <span class="font-bold text-lg">TI</span>
+                        </label>
+                    </div>
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -348,7 +282,6 @@
                         </label>
                     </div>
                 </fieldset>
-                
                 <fieldset id="conditional_celular_tic" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_tic_motivo">8a. Motivo (Celular TIC)</legend>
                     <select id="item_celular_tic_motivo" name="item_celular_tic_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
@@ -362,41 +295,95 @@
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_tic_posse">9. O Celular TIC Ficou na posse de quem?</legend>
-                    <input type="text" id="item_celular_tic_posse" name="item_celular_tic_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
-                </fieldset>
-
-                <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">10. Qual o status das salas?</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">9. O Celular TIC Ficou na posse de qual SETOR?</legend>
                     <div class="flex gap-4">
-                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
-                            <input type="radio" name="item_salas_status" value="trancadas" class="sr-only" required>
-                            <span class="font-bold text-lg text-center">Trancadas (Fechamento)</span>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_celular_tic_posse" value="adm" class="sr-only" required>
+                            <span class="font-bold text-lg">ADM</span>
                         </label>
-                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
-                            <input type="radio" name="item_salas_status" value="abertas" class="sr-only" required>
-                            <span class="font-bold text-lg text-center">Abertas (Abertura)</span>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_celular_tic_posse" value="ti" class="sr-only" required>
+                            <span class="font-bold text-lg">TI</span>
                         </label>
                     </div>
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_salas_quais">11. Quais salas estão Trancadas ou Abertas?</legend>
-                    <input type="text" id="item_salas_quais" name="item_salas_quais" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Ex: Sala 1, Sala 2, ADM">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">10. Qual o status das Salas?</legend>
+                    
+                    <div class="mt-4 pt-4 border-t">
+                        <label class="block text-md font-medium text-gray-800 mb-3">A. Sala Médica</label>
+                        <div class="toggle-switch">
+                            <input type="radio" name="item_sala_medica" value="opt1" id="sala_medica_opt1" class="toggle-input" required>
+                            <label for="sala_medica_opt1" class="toggle-label toggle-left" id="label_sala_medica_1">...</label>
+                            
+                            <input type="radio" name="item_sala_medica" value="opt2" id="sala_medica_opt2" class="toggle-input" required>
+                            <label for="sala_medica_opt2" class="toggle-label toggle-right" id="label_sala_medica_2">...</label>
+                            
+                            <span class="toggle-handle"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t">
+                        <label class="block text-md font-medium text-gray-800 mb-3">B. Sala de Reunião</label>
+                        <div class="toggle-switch">
+                            <input type="radio" name="item_sala_reuniao" value="opt1" id="sala_reuniao_opt1" class="toggle-input" required>
+                            <label for="sala_reuniao_opt1" class="toggle-label toggle-left" id="label_sala_reuniao_1">...</label>
+                            
+                            <input type="radio" name="item_sala_reuniao" value="opt2" id="sala_reuniao_opt2" class="toggle-input" required>
+                            <label for="sala_reuniao_opt2" class="toggle-label toggle-right" id="label_sala_reuniao_2">...</label>
+                            
+                            <span class="toggle-handle"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t">
+                        <label class="block text-md font-medium text-gray-800 mb-3">C. Exame Teórico</label>
+                        <div class="toggle-switch">
+                            <input type="radio" name="item_sala_teorico" value="opt1" id="sala_teorico_opt1" class="toggle-input" required>
+                            <label for="sala_teorico_opt1" class="toggle-label toggle-left" id="label_sala_teorico_1">...</label>
+                            
+                            <input type="radio" name="item_sala_teorico" value="opt2" id="sala_teorico_opt2" class="toggle-input" required>
+                            <label for="sala_teorico_opt2" class="toggle-label toggle-right" id="label_sala_teorico_2">...</label>
+                            
+                            <span class="toggle-handle"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t">
+                        <label class="block text-md font-medium text-gray-800 mb-3">D. ADM</label>
+                        <div class="toggle-switch">
+                            <input type="radio" name="item_sala_adm" value="opt1" id="sala_adm_opt1" class="toggle-input" required>
+                            <label for="sala_adm_opt1" class="toggle-label toggle-left" id="label_sala_adm_1">...</label>
+                            
+                            <input type="radio" name="item_sala_adm" value="opt2" id="sala_adm_opt2" class="toggle-input" required>
+                            <label for="sala_adm_opt2" class="toggle-label toggle-right" id="label_sala_adm_2">...</label>
+                            
+                            <span class="toggle-handle"></span>
+                        </div>
+                    </div>
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_chaves_posse">12. Quem ficou de posse das Chaves?</legend>
-                    <input type="text" id="item_chaves_posse" name="item_chaves_posse" required class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta">
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">11. As chaves ficaram na posse de qual SETOR?</legend>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_chaves_posse" value="adm" class="sr-only" required>
+                            <span class="font-bold text-lg">ADM</span>
+                        </label>
+                        <label class="flex-1 flex justify-center p-5 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition has-[:checked]:bg-blue-600 has-[:checked]:text-white has-[:checked]:ring-2 has-[:checked]:ring-blue-400">
+                            <input type="radio" name="item_chaves_posse" value="ti" class="sr-only" required>
+                            <span class="font-bold text-lg">TI</span>
+                        </label>
+                    </div>
                 </fieldset>
                 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_pendencia">13. Pendências / Observações</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">12. Pendências / Observações</legend>
                     <label for="item_pendencia" class="text-sm text-gray-500">Descreva aqui problemas de "Outros" ou informe o nº do chamado aberto.</label>
                     <textarea id="item_pendencia" name="item_pendencia" rows="4" class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta"></textarea>
                 </fieldset>
 
-                <!-- Div de Erro da Validação -->
                 <div id="checklist-error" class="hidden bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg text-center font-medium shadow-sm"></div>
 
                 <div class="pt-8">
@@ -410,55 +397,47 @@
             </form>
         </div>
     </div>
-
-    <!-- 4. TELA DO GESTOR (DASHBOARD) -->
     <div id="app-screen-gestor" class="hidden-screen max-w-5xl mx-auto p-6 bg-white min-h-screen shadow-lg">
+        
         <header class="mb-8 pb-4 border-b border-gray-200 flex justify-between items-start">
             <div class="flex-1">
                 <h1 class="text-3xl font-bold text-blue-800">Painel do Gestor</h1>
                 <div class="mt-2 text-sm text-gray-600">
                     <p>Gestor: <span id="gestor-name-display" class="font-medium text-gray-900">...</span></p>
-                    <p>Unidade: <span id="unidade-display-gestor" class="font-medium text-gray-900">...</span></p>
-                </div>
+                    </div>
             </div>
-            <!-- BOTÃO MODO ESCURO (TÉCNICO E GESTOR) -->
             <div class="flex items-center gap-6">
                 <button class="dark-mode-btn p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-md ml-3">
-                <!-- SOL (MODO CLARO) -->
                 <svg class="sun-icon w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-3.05-.293l-.707-.707a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414zM5 11a1 1 0 100-2H4a1 1 0 000 2h1z"/>
                 </svg>
-                <!-- LUA (MODO ESCURO) -->
                 <svg class="moon-icon w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
                 </svg>
             </button>
-            <!-- BOTÃO SAIR -->
             <button id="btn-logout-gestor" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-lg transition transform hover:scale-105 active:scale-95">Sair</button>
         </header>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- CARD 1: CHECKLISTS HOJE -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
                 <h3 class="text-lg font-semibold opacity-90">Checklists Hoje</h3>
                 <p class="text-3xl font-bold mt-2" id="checklists-hoje">0</p>
                 <p class="text-sm opacity-80 mt-1">Abertura + Fechamento</p>
             </div>
 
-            <!-- CARD 2: COM OCORRÊNCIA -->
             <div class="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg">
                 <h3 class="text-lg font-semibold opacity-90">Com Ocorrência</h3>
                 <p class="text-3xl font-bold mt-2" id="com-ocorrencia">0</p>
                 <p class="text-sm opacity-80 mt-1">Pendências reportadas</p>
             </div>
 
-            <!-- CARD 3: TÉCNICOS ATIVOS -->
             <div class="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
                 <h3 class="text-lg font-semibold opacity-90">Técnicos Ativos</h3>
                 <p class="text-3xl font-bold mt-2" id="tecnicos-ativos">0</p>
                 <p class="text-sm opacity-80 mt-1">Online agora</p>
             </div>
         </div>
-        <!-- DASHBOARD POWER BI -->
+
         <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
             <h2 class="text-xl font-bold text-gray-800 mb-4">Dashboard Operacional (Power BI)</h2>
             <div class="w-full h-96 bg-gray-200 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-500">
@@ -469,13 +448,10 @@
             </div>
         </div>
 
-        <!-- RODAPÉ -->
         <footer class="mt-12 text-center text-xs text-gray-500">
             Checklist Poupa Tempo © 2025 | Desenvolvido com Tailwind + Firebase
         </footer>
     </div>
-
-    <!-- 5. MENSAGEM DE SUCESSO (Modal) -->
     <div id="success-message" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full text-center">
             <h3 class="text-xl font-semibold mt-4 mb-2 text-gray-800">Salvo com Sucesso!</h3>
@@ -484,457 +460,6 @@
             </button>
         </div>
     </div>
-
-
-    <!-- ====================================================== -->
-    <!-- JAVASCRIPT (Módulo Refatorado v12 - Correção de Submit) -->
-    <!-- ====================================================== -->
-    <script type="module">
-        // Importações do Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            onAuthStateChanged,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            serverTimestamp,
-            doc,
-            getDoc,
-            setLogLevel
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // ======================================================
-        // 1. CONFIGURAÇÃO FIREBASE
-        // ======================================================
-        const firebaseConfig = {
-        apiKey: "AIzaSyCV97jMnn51ilgF5j-fpdTzR-c9MY19B-k",
-        authDomain: "checklist-poupatempo.firebaseapp.com",
-        projectId: "checklist-poupatempo",
-        storageBucket: "checklist-poupatempo.firebasestorage.app",
-        messagingSenderId: "470875876173",
-        appId: "1:470875876173:web:b5138e359bacf0e091a504"
-        };
-        
-        // ======================================================
-        // 2. MÓDULOS DE SERVIÇO (A NOVA ARQUITETURA)
-        // ======================================================
-
-        /**
-         * AppCore: Guarda o estado central e os serviços do Firebase.
-         */
-        const AppCore = {
-            db: null,
-            auth: null,
-            currentUser: null, // { uid, nome, unidadeNome }
-            currentChecklistType: null,
-
-            init() {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    AppCore.db = getFirestore(app);
-                    AppCore.auth = getAuth(app);
-                    setLogLevel('debug');
-                    console.log("Firebase inicializado com sucesso.");
-                    return true;
-                } catch (error) {
-                    console.error("Erro na inicialização do Firebase:", error);
-                    UIService.showLoginError(`Erro fatal: ${error.message}`);
-                    return false;
-                }
-            }
-        };
-
-        /**
-         * UIService: Controla a visibilidade das telas e elementos da UI.
-         */
-        const UIService = {
-            screens: {
-                loading: document.getElementById('loading-screen'),
-                login: document.getElementById('login-screen'),
-                tecnico: document.getElementById('app-screen-tecnico'),
-                gestor: document.getElementById('app-screen-gestor')
-            },
-            selectionView: document.getElementById('selection-view'),
-            checklistView: document.getElementById('checklist-view'),
-            successMessage: document.getElementById('success-message'),
-            loginError: document.getElementById('login-error'),
-            checklistError: document.getElementById('checklist-error'), 
-
-            showView(viewName) {
-                // Esconde todas
-                Object.values(this.screens).forEach(screen => {
-                    screen.classList.remove('active');
-                    screen.style.display = 'none';
-                });
-
-                // Mostra a desejada
-                const screen = this.screens[viewName];
-                if (screen) {
-                    if (viewName === 'login') {
-                        screen.classList.add('active');
-                        screen.style.display = 'flex'; // força flex
-                    } else {
-                        screen.style.display = 'block';
-                    }
-                }
-            },
-
-            showTecnicoView(viewName) {
-                this.selectionView.style.display = 'none';
-                this.checklistView.style.display = 'none';
-                if (viewName === 'selection') {
-                    this.selectionView.style.display = 'block';
-                } else if (viewName === 'checklist') {
-                    this.checklistView.style.display = 'block';
-                }
-            },
-
-            updateUserInfo(user) {
-                if (user.role === 'tecnico') {
-                    document.getElementById('user-name-display').textContent = user.nome;
-                    document.getElementById('unidade-display').textContent = user.unidadeNome;
-                } else if (user.role === 'gestor') {
-                    document.getElementById('gestor-name-display').textContent = user.nome;
-                }
-            },
-
-            toggleSpinner(buttonId, show) {
-                const btn = document.getElementById(buttonId);
-                if (btn) {
-                    const spinner = btn.querySelector('.spinner-small');
-                    btn.disabled = show;
-                    if (spinner) {
-                        spinner.style.display = show ? 'inline-block' : 'none';
-                    }
-                }
-            },
-            
-            showLoginError(message) {
-                this.loginError.textContent = message;
-                this.loginError.style.display = 'block';
-            },
-            hideLoginError() {
-                this.loginError.style.display = 'none';
-            },
-
-            showChecklistError(message) {
-                this.checklistError.textContent = message;
-                this.checklistError.style.display = 'block';
-            },
-            hideChecklistError() {
-                this.checklistError.style.display = 'none';
-            },
-            
-            setupConditionalLogic() {
-                const setupListener = (radioName, triggerValue, fieldId) => {
-                    const radios = document.querySelectorAll(`input[name="${radioName}"]`);
-                    const field = document.getElementById(fieldId);
-                    
-                    radios.forEach(radio => {
-                        radio.addEventListener('change', (event) => {
-                            if (event.target.value === triggerValue) {
-                                field.style.display = 'block';
-                            } else {
-                                field.style.display = 'none';
-                            }
-                        });
-                    });
-                };
-
-                setupListener('item_computadores', 'outra', 'conditional_computadores');
-                setupListener('item_contagem', 'nao', 'conditional_contagem');
-                setupListener('item_totem_ligado', 'nao', 'conditional_totem');
-                setupListener('item_tablet_corp_ok', 'nao', 'conditional_tablet_corp');
-                setupListener('item_celular_corp_ok', 'nao', 'conditional_celular_corp');
-                setupListener('item_celular_tic_ok', 'nao', 'conditional_celular_tic');
-            },
-
-            resetConditionalFields() {
-                document.querySelectorAll('.conditional-field').forEach(field => {
-                    field.style.display = 'none';
-                });
-            }
-        };
-
-        /**
-         * AuthService: Cuida de toda a lógica de autenticação.
-         */
-        const AuthService = {
-            listenForAuthChanges() {
-                onAuthStateChanged(AppCore.auth, async (user) => {
-                    if (user) {
-                        UIService.showView('loading');
-                        await this.checkUserRole(user.uid);
-                    } else {
-                        AppCore.currentUser = null;
-                        UIService.showView('login');
-                    }
-                });
-            },
-
-            async checkUserRole(uid) {
-                try {
-                    const userDocRef = doc(AppCore.db, "usuarios", uid);
-                    const userDoc = await getDoc(userDocRef);
-
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        const userRole = userData.role;
-
-                        if (userRole === 'tecnico') {
-                            AppCore.currentUser = {
-                                uid: uid,
-                                nome: userData.nome,
-                                unidadeNome: userData.unidadeNome,
-                                role: 'tecnico'
-                            };
-                            UIService.updateUserInfo(AppCore.currentUser);
-                            UIService.showView('tecnico');
-                            UIService.showTecnicoView('selection');
-                        } else if (userRole === 'gestor') {
-                            AppCore.currentUser = {
-                                uid: uid,
-                                nome: userData.nome,
-                                unidadeNome: null,
-                                role: 'gestor'
-                            };
-                            UIService.updateUserInfo(AppCore.currentUser);
-                            UIService.showView('gestor');
-                        } else {
-                            throw new Error("Cargo de usuário desconhecido.");
-                        }
-                    } else {
-                        throw new Error("Dados de usuário não encontrados no Firestore.");
-                    }
-                } catch (error) {
-                    console.error("Erro ao verificar cargo:", error);
-                    UIService.showLoginError(`Erro de permissão: ${error.message}`);
-                    UIService.showView('login');
-                    await this.handleLogout(); 
-                }
-            },
-
-            async handleLogin(event) {
-                event.preventDefault();
-                UIService.toggleSpinner('btn-login', true);
-                UIService.hideLoginError();
-                
-                const loginForm = document.getElementById('login-form');
-                const email = loginForm.email.value;
-                const password = loginForm.password.value;
-
-                try {
-                    await signInWithEmailAndPassword(AppCore.auth, email, password);
-                } catch (error) {
-                    UIService.showLoginError("Email ou senha inválidos.");
-                } finally {
-                    UIService.toggleSpinner('btn-login', false);
-                }
-            },
-
-            async handleLogout() {
-                try {
-                    await signOut(AppCore.auth);
-                } catch (error) {
-                    console.error("Erro ao sair:", error);
-                }
-            }
-        };
-
-        /**
-         * ChecklistService: Cuida da lógica de preenchimento e salvamento.
-         */
-        const ChecklistService = {
-            start(type) {
-                AppCore.currentChecklistType = type;
-                document.getElementById('checklist-title').textContent = `Checklist de ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-                document.getElementById('checklist-form').reset();
-                UIService.resetConditionalFields();
-                UIService.showTecnicoView('checklist');
-            },
-
-            getFormData() {
-                const formData = new FormData(document.getElementById('checklist-form'));
-                const items = {
-                    computadores: formData.get('item_computadores'),
-                    computadoresMotivo: formData.get('item_computadores_motivo'),
-                    contagemEquip: formData.get('item_contagem'),
-                    contagemMotivo: formData.get('item_contagem_motivo'),
-                    totemLigado: formData.get('item_totem_ligado'),
-                    totemMotivo: formData.get('item_totem_motivo'),
-                    tabletCorpOk: formData.get('item_tablet_corp_ok'),
-                    tabletCorpMotivo: formData.get('item_tablet_corp_motivo'),
-                    tabletCorpPosse: formData.get('item_tablet_corp_posse'),
-                    celularCorpOk: formData.get('item_celular_corp_ok'),
-                    celularCorpMotivo: formData.get('item_celular_corp_motivo'),
-                    celularCorpPosse: formData.get('item_celular_corp_posse'),
-                    celularTicOk: formData.get('item_celular_tic_ok'),
-                    celularTicMotivo: formData.get('item_celular_tic_motivo'),
-                    celularTicPosse: formData.get('item_celular_tic_posse'),
-                    salasStatus: formData.get('item_salas_status'),
-                    salasQuais: formData.get('item_salas_quais'),
-                    chavesPosse: formData.get('item_chaves_posse'),
-                    pendencia: formData.get('item_pendencia')
-                };
-                return items;
-            },
-
-            async handleSubmit(event) {
-                event.preventDefault();
-                UIService.toggleSpinner('btn-salvar', true);
-                UIService.hideChecklistError(); 
-
-                const form = document.getElementById('checklist-form');
-                if (!form.checkValidity()) {
-                    UIService.showChecklistError("Erro: Por favor, preencha todos os campos obrigatórios.");
-                    UIService.toggleSpinner('btn-salvar', false);
-                    return; 
-                }
-
-                // *** CORREÇÃO v12: 'this' estava incorreto aqui. ***
-                // Agora 'this' está 'amarrado' (bound) corretamente.
-                const items = this.getFormData(); 
-
-                let validationError = null;
-
-                if (items.computadores === 'outra' && items.computadoresMotivo === 'na') {
-                    validationError = "Por favor, selecione o motivo para 'Computadores'.";
-                } else if (items.contagemEquip === 'nao' && items.contagemMotivo === 'na') {
-                    validationError = "Por favor, selecione o motivo para 'Contagem de Equipamentos'.";
-                } else if (items.totemLigado === 'nao' && items.totemMotivo === 'na') {
-                    validationError = "Por favor, selecione o motivo da falha do 'Totem'.";
-                } else if (items.tabletCorpOk === 'nao' && items.tabletCorpMotivo === 'na') {
-                    validationError = "Por favor, selecione o motivo para 'Tablet Corporativo'.";
-                } else if (items.celularCorpOk === 'nao' && items.celularCorpMotivo === 'na') {
-                    validationError = "Por favor, selecione o motivo para 'Celular Corporativo'.";
-                } else if (items.celularTicOk === 'nao' && items.celularTicMotivo === 'na') {
-                    validationError = "Por favor, selecione o motivo para 'Celular TIC'.";
-                }
-
-                if (validationError) {
-                    UIService.showChecklistError(validationError);
-                    UIService.toggleSpinner('btn-salvar', false);
-                    return; 
-                }
-                
-                try {
-                    const pendenciaTexto = items.pendencia || "";
-                    const possuiOcorrencia = (
-                        items.computadores === 'outra' || items.contagemEquip === 'nao' ||
-                        items.totemLigado === 'nao' || items.tabletCorpOk === 'nao' ||
-                        items.celularCorpOk === 'nao' || items.celularTicOk === 'nao' ||
-                        (pendenciaTexto.trim().length > 3)
-                    );
-
-                    const checklistDocument = {
-                        tecnicoId: AppCore.currentUser.uid,
-                        tecnicoNome: AppCore.currentUser.nome,
-                        unidadeNome: AppCore.currentUser.unidadeNome,
-                        tipo: AppCore.currentChecklistType,
-                        timestamp: serverTimestamp(),
-                        dataReferencia: new Date().toISOString().split('T')[0],
-                        possuiOcorrencia: possuiOcorrencia,
-                        itens: items
-                    };
-
-                    await addDoc(collection(AppCore.db, "checklists"), checklistDocument);
-                    
-                    UIService.successMessage.style.display = 'flex';
-
-                } catch (error) {
-                    console.error("Erro ao salvar o checklist: ", error);
-                    UIService.showChecklistError("Erro ao salvar no banco de dados.");
-                } finally {
-                    UIService.toggleSpinner('btn-salvar', false);
-                }
-            }
-        };
-        
-        /**
-         * EventListeners: Ponto central para ligar UI (HTML) com a Lógica (JS).
-         */
-        const EventListeners = {
-            init() {
-                try {
-                    // Login / Logout
-                    document.getElementById('login-form').addEventListener('submit', AuthService.handleLogin);
-                    document.getElementById('btn-logout-tecnico').addEventListener('click', AuthService.handleLogout);
-                    document.getElementById('btn-logout-gestor').addEventListener('click', AuthService.handleLogout);
-
-                    // Navegação Técnico
-                    document.getElementById('btn-abertura').addEventListener('click', () => ChecklistService.start('abertura'));
-                    document.getElementById('btn-fechamento').addEventListener('click', () => ChecklistService.start('fechamento'));
-                    document.getElementById('btn-voltar').addEventListener('click', () => UIService.showTecnicoView('selection'));
-
-                    // Formulário
-                    // *** CORREÇÃO v12: 'bind(ChecklistService)' foi adicionado aqui ***
-                    document.getElementById('checklist-form').addEventListener('submit', ChecklistService.handleSubmit.bind(ChecklistService));
-                    
-                    document.getElementById('btn-success-ok').addEventListener('click', () => {
-                        UIService.successMessage.style.display = 'none';
-                        UIService.showTecnicoView('selection');
-                    });
-                    
-                    // Lógica condicional
-                    UIService.setupConditionalLogic();
-                    
-                    console.log("Listeners de eventos inicializados.");
-                } catch(error) {
-                    console.error("Erro ao iniciar listeners:", error);
-                    UIService.showLoginError("Erro ao carregar a interface. Recarregue a página.");
-                }
-            }
-        };
-
-        // ======================================================
-        // MODO ESCURO TOGGLE
-        // ======================================================
-        document.querySelectorAll('.dark-mode-btn').forEach(btn => {
-            const sunIcon = btn.querySelector('.sun-icon');
-            const moonIcon = btn.querySelector('.moon-icon');
-            const html = document.documentElement;
-
-            // Atualiza ícones com base no estado atual
-            const updateIcons = () => {
-                if (html.classList.contains('dark')) {
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
-                } else {
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
-                }
-            };
-
-            // Carrega preferência
-            if (localStorage.getItem('darkMode') === 'true') {
-                html.classList.add('dark');
-            }
-            updateIcons();
-
-            // Evento de clique
-            btn.addEventListener('click', () => {
-                html.classList.toggle('dark');
-                const isDark = html.classList.contains('dark');
-                localStorage.setItem('darkMode', isDark);
-                updateIcons();
-            });
-        });
-        
-        // ======================================================
-        // 4. INICIALIZAÇÃO DO APP
-        // ======================================================
-        if (AppCore.init()) {
-            EventListeners.init();
-            AuthService.listenForAuthChanges();
-        } else {
-            UIService.showView('login');
-        }
-
-    </script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
