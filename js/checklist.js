@@ -49,10 +49,10 @@ export const ChecklistService = {
             celularTicOk: formData.get('item_celular_tic_ok'),
             celularTicMotivo: formData.get('item_celular_tic_motivo'),
             celularTicPosse: formData.get('item_celular_tic_posse'),
-            salaMedica: formData.get('item_sala_medica'), // Não é mais 'required'
-            salaReuniao: formData.get('item_sala_reuniao'), // Não é mais 'required'
-            salaTeorico: formData.get('item_sala_teorico'), // Não é mais 'required'
-            salaAdm: formData.get('item_sala_adm'), // Não é mais 'required'
+            salaMedica: formData.get('item_sala_medica'),
+            salaReuniao: formData.get('item_sala_reuniao'),
+            salaTeorico: formData.get('item_sala_teorico'),
+            salaAdm: formData.get('item_sala_adm'),
             chavesPosse: formData.get('item_chaves_posse'),
             pendencia: formData.get('item_pendencia')
         };
@@ -68,15 +68,12 @@ export const ChecklistService = {
         const items = this.getFormData(); 
         let validationError = null;
 
-        // ===== VALIDAÇÃO CORRIGIDA =====
-
-        // 1. Usa o checkValidity() do navegador para todos os campos 'required' VISÍVEIS.
-        // (Como as Salas não são mais 'required', isso não vai mais falhar).
+        // 1. Validação de campos 'required' visíveis
         if (!form.checkValidity()) {
             validationError = "Erro: Por favor, preencha todos os campos obrigatórios.";
         }
         
-        // 2. Validação CONDICIONAL (O que você pediu)
+        // 2. Validação CONDICIONAL
         if (!validationError) {
             if (items.computadores === 'outra' && items.computadoresMotivo === 'na') {
                 validationError = "Por favor, selecione o motivo para 'Computadores'.";
@@ -92,7 +89,6 @@ export const ChecklistService = {
                 validationError = "Por favor, selecione o motivo para 'Celular TIC'.";
             }
         }
-        // ===== FIM DA VALIDAÇÃO =====
 
         if (validationError) {
             UIService.showChecklistError(validationError);
@@ -101,12 +97,20 @@ export const ChecklistService = {
         }
         
         try {
+            // ===== CORREÇÃO DO FUSO HORÁRIO APLICADA AQUI =====
+            const hoje = new Date(); // Pega a data/hora local (ex: 13/11 00:30 GMT-0300)
+            const ano = hoje.getFullYear();
+            const mes = (hoje.getMonth() + 1).toString().padStart(2, '0'); // +1 pois getMonth() é 0-11
+            const dia = hoje.getDate().toString().padStart(2, '0');
+            const dataReferenciaLocal = `${ano}-${mes}-${dia}`; // Formato "YYYY-MM-DD" (ex: "2025-11-13")
+            // ===================================================
+
             const pendenciaTexto = items.pendencia || "";
             const possuiOcorrencia = (
                 items.computadores === 'outra' || items.contagemEquip === 'nao' ||
                 items.totemLigado === 'nao' || items.tabletCorpOk === 'nao' ||
                 items.celularCorpOk === 'nao' || items.celularTicOk === 'nao' ||
-                items.salaMedica === 'opt2' || items.salaReuniao === 'opt2' || // 'opt2' é o estado "incorreto"
+                items.salaMedica === 'opt2' || items.salaReuniao === 'opt2' ||
                 items.salaTeorico === 'opt2' || items.salaAdm === 'opt2' ||
                 (pendenciaTexto.trim().length > 3)
             );
@@ -117,8 +121,8 @@ export const ChecklistService = {
                 unidadeId: AppCore.currentUser.unidadeId, 
                 unidadeNome: AppCore.currentUser.unidadeNome, 
                 tipo: AppCore.currentChecklistType,
-                timestamp: serverTimestamp(),
-                dataReferencia: new Date().toISOString().split('T')[0],
+                timestamp: serverTimestamp(), // O timestamp do Firebase ainda será UTC (o que é bom)
+                dataReferencia: dataReferenciaLocal, // <-- MAS a nossa data de filtro será a local
                 possuiOcorrencia: possuiOcorrencia,
                 itens: items
             };
