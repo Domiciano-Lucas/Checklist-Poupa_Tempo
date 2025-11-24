@@ -1,5 +1,8 @@
 body { font-family: 'Inter', sans-serif; }
-.hidden-screen { display: none; }
+
+/* CORREÇÃO APLICADA AQUI: !important para forçar o desaparecimento */
+.hidden-screen { display: none !important; }
+
 .conditional-field { display: none; }
 
 /* Força o login a ocupar toda a tela */
@@ -10,6 +13,7 @@ body { font-family: 'Inter', sans-serif; }
     display: flex !important;
 }
 
+/* Animações de Loading */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner {
     border: 4px solid rgba(0, 0, 0, 0.1);
@@ -25,7 +29,9 @@ body { font-family: 'Inter', sans-serif; }
     border-width: 2px;
 }
 
-/* TOGGLE SWITCH - 100% FUNCIONAL NO HTML */
+/* ======================================================
+   TOGGLE SWITCH SIMPLES (USADO NO HEADER - DARK MODE)
+   ====================================================== */
 .toggle-container {
     display: flex;
     align-items: center;
@@ -52,7 +58,7 @@ body { font-family: 'Inter', sans-serif; }
     transition: transform 0.3s;
 }
 
-/* ESTADO ATIVADO */
+/* Estado Ativado (Dark Mode) */
 #dark-mode-toggle:checked + .toggle-container .toggle-track {
     background-color: #2563eb;
 }
@@ -61,7 +67,9 @@ body { font-family: 'Inter', sans-serif; }
     background-color: #1f2937;
 }
 
-/* MODO ESCURO GLOBAL */
+/* ======================================================
+   MODO ESCURO GLOBAL
+   ====================================================== */
 .dark {
     background-color: #111827 !important;
     color: #f3f4f6 !important;
@@ -86,72 +94,99 @@ body { font-family: 'Inter', sans-serif; }
 }
 .dark input::placeholder { color: #9ca3af !important; }
 
+/* ======================================================
+   NOVO: SWITCH DE 3 ESTADOS (SALAS)
+   ====================================================== */
+.tri-state-toggle-group {
+    position: relative;
+    width: 100%;
+    max-width: 400px; /* Limita a largura para não ficar gigante */
+    margin: 0 auto;
+}
 
-/* ===== NOVO: Toggle Switch para Salas ===== */
-.toggle-switch {
+.toggle-track-3state {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100%;
-    height: 52px;
-    background-color: #e5e7eb; /* bg-gray-200 */
-    border-radius: 99px; /* rounded-full */
+    grid-template-columns: 1fr 1fr 1fr; /* 3 colunas iguais */
+    height: 50px;
+    background-color: #e5e7eb; /* gray-200 */
+    border-radius: 99px;
+    padding: 4px;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-    padding: 6px;
-    font-family: 'Inter', sans-serif;
 }
-.dark .toggle-switch {
-    background-color: #374151; /* dark:bg-gray-700 */
+
+.dark .toggle-track-3state {
+    background-color: #374151; /* gray-700 */
 }
-.toggle-input {
-    display: none; /* Esconde o radio button real */
-}
-.toggle-label {
+
+/* Labels (Textos clicáveis) */
+.toggle-label-3state {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem; /* text-lg */
-    font-weight: 700; /* font-bold */
-    color: #4b5563; /* text-gray-600 */
-    border-radius: 99px;
-    cursor: pointer;
-    transition: color 0.3s;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #6b7280; /* gray-500 default */
     z-index: 10;
+    cursor: pointer;
+    text-align: center;
+    transition: color 0.3s ease;
+    user-select: none;
 }
-.dark .toggle-label {
-    color: #d1d5db; /* dark:text-gray-300 */
+
+.dark .toggle-label-3state {
+    color: #9ca3af; /* gray-400 */
 }
-/* O "handle" que se move */
-.toggle-handle {
+
+/* O "Handle" (Botão branco que se move) */
+.toggle-handle-3state {
     position: absolute;
-    top: 6px;
-    left: 6px;
-    width: calc(50% - 6px);
-    height: 40px;
+    top: 4px;
+    left: 4px;
+    width: calc(33.333% - 4px); /* Ocupa 1/3 menos padding */
+    height: 42px;
     background-color: white;
     border-radius: 99px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 5;
 }
-.dark .toggle-handle {
-    background-color: #1f2937; /* dark:bg-gray-800 */
+
+.dark .toggle-handle-3state {
+    background-color: #1f2937; /* gray-800 */
 }
-/* Lógica de movimento */
-.toggle-input:checked + .toggle-label {
-    color: #1d4ed8; /* text-blue-700 */
+
+/* === LÓGICA DE MOVIMENTO DO HANDLE === */
+
+/* 1. Centro (Neutro/Default) */
+.toggle-input-neutro:checked ~ .toggle-track-3state .toggle-handle-3state {
+    transform: translateX(100%); /* Move para o meio (100% da largura dele mesmo) */
 }
-.dark .toggle-input:checked + .toggle-label {
-    color: white;
+
+/* 2. Esquerda (Aberta) */
+.toggle-input-aberta:checked ~ .toggle-track-3state .toggle-handle-3state {
+    transform: translateX(0%); /* Fica no início */
 }
-/* Move o handle quando 'opt2' (o da direita) é selecionado */
-.toggle-input[value="opt2"]:checked ~ .toggle-handle {
-    transform: translateX(100%);
+
+/* 3. Direita (Fechada) */
+.toggle-input-fechada:checked ~ .toggle-track-3state .toggle-handle-3state {
+    transform: translateX(205%); /* Move para o final (aprox 200% + ajuste visual) */
 }
-/* Cor do texto de "ocorrência" (opt2) quando selecionado */
-.toggle-input[value="opt2"]:checked + .toggle-label {
-    color: #dc2626; /* text-red-600 */
+
+/* === LÓGICA DE CORES DO TEXTO === */
+
+/* Quando ABERTA está selecionada -> Texto fica AZUL */
+.toggle-input-aberta:checked ~ .toggle-track-3state .label-left {
+    color: #1d4ed8; /* blue-700 */
 }
-.dark .toggle-input[value="opt2"]:checked + .toggle-label {
-    color: #fca5a5; /* text-red-300 */
+.dark .toggle-input-aberta:checked ~ .toggle-track-3state .label-left {
+    color: #60a5fa; /* blue-400 */
+}
+
+/* Quando FECHADA está selecionada -> Texto fica VERMELHO */
+.toggle-input-fechada:checked ~ .toggle-track-3state .label-right {
+    color: #dc2626; /* red-600 */
+}
+.dark .toggle-input-fechada:checked ~ .toggle-track-3state .label-right {
+    color: #f87171; /* red-400 */
 }

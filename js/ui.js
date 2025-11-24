@@ -1,5 +1,6 @@
 /**
  * UIService: Controla a visibilidade das telas e elementos da UI.
+ * Atualizado para manipular classes do Tailwind (hidden) em vez de estilos inline.
  */
 export const UIService = {
     screens: {
@@ -14,30 +15,34 @@ export const UIService = {
     loginError: document.getElementById('login-error'),
     checklistError: document.getElementById('checklist-error'), 
 
+    // Gerencia a troca de telas principais
     showView(viewName) {
+        // Oculta todas as telas
         Object.values(this.screens).forEach(screen => {
-            screen.classList.remove('active');
-            screen.style.display = 'none';
+            screen.classList.remove('active'); // Para o login
+            screen.classList.add('hidden-screen'); // Para as outras
+            if (screen.id === 'login-screen') screen.style.display = ''; // Limpa inline style antigo se houver
         });
 
         const screen = this.screens[viewName];
         if (screen) {
             if (viewName === 'login') {
-                screen.classList.add('active');
-                screen.style.display = 'flex'; 
+                screen.classList.add('active'); // CSS específico do login
             } else {
-                screen.style.display = 'block';
+                screen.classList.remove('hidden-screen');
             }
         }
     },
 
+    // Gerencia a navegação interna do técnico (Seleção vs Formulário)
     showTecnicoView(viewName) {
-        this.selectionView.style.display = 'none';
-        this.checklistView.style.display = 'none';
+        this.selectionView.classList.add('hidden-screen');
+        this.checklistView.classList.add('hidden-screen');
+
         if (viewName === 'selection') {
-            this.selectionView.style.display = 'block';
+            this.selectionView.classList.remove('hidden-screen');
         } else if (viewName === 'checklist') {
-            this.checklistView.style.display = 'block';
+            this.checklistView.classList.remove('hidden-screen');
         }
     },
 
@@ -56,25 +61,33 @@ export const UIService = {
             const spinner = btn.querySelector('.spinner-small');
             btn.disabled = show;
             if (spinner) {
-                spinner.style.display = show ? 'inline-block' : 'none';
+                if (show) {
+                    spinner.classList.remove('hidden');
+                    spinner.style.display = 'inline-block'; // Garante display
+                } else {
+                    spinner.classList.add('hidden');
+                    spinner.style.display = 'none';
+                }
             }
         }
     },
     
     showLoginError(message) {
         this.loginError.textContent = message;
-        this.loginError.style.display = 'block';
+        this.loginError.classList.remove('hidden');
+        this.loginError.style.display = 'block'; // Fallback para garantir
     },
     hideLoginError() {
+        this.loginError.classList.add('hidden');
         this.loginError.style.display = 'none';
     },
 
     showChecklistError(message) {
         this.checklistError.textContent = message;
-        this.checklistError.style.display = 'block';
+        this.checklistError.classList.remove('hidden');
     },
     hideChecklistError() {
-        this.checklistError.style.display = 'none';
+        this.checklistError.classList.add('hidden');
     },
     
     setupConditionalLogic() {
@@ -86,8 +99,10 @@ export const UIService = {
                 radio.addEventListener('change', (event) => {
                     if (event.target.value === triggerValue) {
                         field.style.display = 'block';
+                        field.classList.remove('hidden');
                     } else {
                         field.style.display = 'none';
+                        field.classList.add('hidden');
                     }
                 });
             });
@@ -104,6 +119,7 @@ export const UIService = {
     resetConditionalFields() {
         document.querySelectorAll('.conditional-field').forEach(field => {
             field.style.display = 'none';
+            field.classList.add('hidden');
         });
     },
 

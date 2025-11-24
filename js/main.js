@@ -7,31 +7,41 @@ import { initDarkMode } from "./darkMode.js";
 
 /**
  * EventListeners: Ponto central para ligar UI (HTML) com a Lógica (JS).
- * (Mantido no main.js por ser o ponto de entrada)
  */
 const EventListeners = {
     init() {
         try {
-            // Login / Logout
-            // ===== CORREÇÃO APLICADA AQUI (.bind(AuthService)) =====
+            // ======================================================
+            // 1. LOGIN / LOGOUT
+            // ======================================================
+            // O bind é necessário aqui para o 'this' funcionar dentro do handleLogin
             document.getElementById('login-form').addEventListener('submit', AuthService.handleLogin.bind(AuthService));
-            document.getElementById('btn-logout-tecnico').addEventListener('click', AuthService.handleLogout.bind(AuthService));
-            document.getElementById('btn-logout-gestor').addEventListener('click', AuthService.handleLogout.bind(AuthService));
+            
+            // Logout não precisa de bind, pois não usa 'this' interno, mas mantemos o padrão
+            document.getElementById('btn-logout-tecnico').addEventListener('click', () => AuthService.handleLogout());
+            document.getElementById('btn-logout-gestor').addEventListener('click', () => AuthService.handleLogout());
 
-            // Navegação Técnico
+            // ======================================================
+            // 2. NAVEGAÇÃO TÉCNICO
+            // ======================================================
             document.getElementById('btn-abertura').addEventListener('click', () => ChecklistService.start('abertura'));
             document.getElementById('btn-fechamento').addEventListener('click', () => ChecklistService.start('fechamento'));
             document.getElementById('btn-voltar').addEventListener('click', () => UIService.showTecnicoView('selection'));
 
-            // Formulário
+            // ======================================================
+            // 3. FORMULÁRIO CHECKLIST
+            // ======================================================
             document.getElementById('checklist-form').addEventListener('submit', ChecklistService.handleSubmit.bind(ChecklistService));
             
+            // Botão de "OK" na mensagem de sucesso
             document.getElementById('btn-success-ok').addEventListener('click', () => {
-                UIService.successMessage.style.display = 'none';
-                UIService.showTecnicoView('selection');
+                UIService.successMessage.style.display = 'none'; // Fecha o modal
+                UIService.showTecnicoView('selection'); // Volta para a seleção
             });
             
-            // Lógica condicional
+            // ======================================================
+            // 4. LÓGICA CONDICIONAL (Campos amarelos)
+            // ======================================================
             UIService.setupConditionalLogic();
             
             console.log("Listeners de eventos inicializados.");
@@ -50,7 +60,7 @@ if (AppCore.init()) {
     AuthService.listenForAuthChanges();
     initDarkMode();
 } else {
-    // Se o Firebase falhar, exibe a tela de login com erro
+    // Se o Firebase falhar na inicialização
     UIService.showView('login');
-    UIService.showLoginError("Erro fatal ao carregar. Verifique a conexão.");
+    UIService.showLoginError("Erro fatal ao carregar o Firebase. Verifique a conexão.");
 }

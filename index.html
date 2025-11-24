@@ -18,6 +18,7 @@
         <div class="spinner"></div>
         <p class="ml-3 text-gray-700">Carregando...</p>
     </div>
+
     <div id="login-screen" class="hidden-screen fixed inset-0 z-50 flex items-center justify-center bg-gray-50 p-4">
 
         <button class="dark-mode-btn fixed top-6 right-6 p-3 rounded-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition shadow-lg z-10">
@@ -56,6 +57,7 @@
             </form>
         </div>
     </div>
+
     <div id="app-screen-tecnico" class="hidden-screen max-w-lg mx-auto p-6 bg-white min-h-screen shadow-lg">
         
         <header class="mb-8 pb-4 border-b border-gray-200 flex justify-between items-start">
@@ -131,7 +133,7 @@
                     </div>
                 </fieldset>
                 <fieldset id="conditional_computadores" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_computadores_motivo">1a. Motivo (Computadores)</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">1a. Motivo (Computadores)</legend>
                     <select id="item_computadores_motivo" name="item_computadores_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="windows_corrompeu">Windows Corrompeu</option>
@@ -156,7 +158,7 @@
                     </div>
                 </fieldset>
                 <fieldset id="conditional_contagem" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_contagem_motivo">2a. Motivo (Contagem)</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">2a. Motivo (Contagem)</legend>
                     <select id="item_contagem_motivo" name="item_contagem_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="faltando_equip">Faltando Equipamento</option>
@@ -180,7 +182,7 @@
                     </div>
                 </fieldset>
                 <fieldset id="conditional_totem" class="p-4 border-l-4 border-yellow-500 rounded-lg bg-gray-50 conditional-field">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_totem_motivo">3a. Motivo da Falha (Totem)</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">3a. Motivo da Falha (Totem)</legend>
                     <select id="item_totem_motivo" name="item_totem_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="windows_corrompeu">Windows Corrompeu</option>
@@ -205,7 +207,7 @@
                     </div>
                 </fieldset>
                 <fieldset id="conditional_tablet_corp" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_tablet_corp_motivo">4a. Motivo (Tablet Corp.)</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">4a. Motivo (Tablet Corp.)</legend>
                     <select id="item_tablet_corp_motivo" name="item_tablet_corp_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="nao_liga">Não Liga</option>
@@ -244,7 +246,7 @@
                     </div>
                 </fieldset>
                 <fieldset id="conditional_celular_corp" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_corp_motivo">6a. Motivo (Celular Corp.)</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">6a. Motivo (Celular Corp.)</legend>
                     <select id="item_celular_corp_motivo" name="item_celular_corp_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="nao_liga">Não Liga</option>
@@ -283,7 +285,7 @@
                     </div>
                 </fieldset>
                 <fieldset id="conditional_celular_tic" class="conditional-field bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl p-5 -mt-3 hidden">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm" for="item_celular_tic_motivo">8a. Motivo (Celular TIC)</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">8a. Motivo (Celular TIC)</legend>
                     <select id="item_celular_tic_motivo" name="item_celular_tic_motivo" class="w-full p-3 bg-white border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-yellow-400">
                         <option value="na" selected>Selecione o problema...</option>
                         <option value="nao_liga">Não Liga</option>
@@ -309,58 +311,74 @@
                 </fieldset>
 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">10. Qual o status das Salas?</legend>
+                    <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm mb-4">10. Qual o status das Salas?</legend>
                     
-                    <div class="mt-4 pt-4 border-t">
-                        <label class="block text-md font-medium text-gray-800 mb-3">A. Sala Médica</label>
-                        <div class="toggle-switch">
-                            <input type="radio" name="item_sala_medica" value="opt1" id="sala_medica_opt1" class="toggle-input" required>
-                            <label for="sala_medica_opt1" class="toggle-label toggle-left" id="label_sala_medica_1">...</label>
-                            
-                            <input type="radio" name="item_sala_medica" value="opt2" id="sala_medica_opt2" class="toggle-input" required>
-                            <label for="sala_medica_opt2" class="toggle-label toggle-right" id="label_sala_medica_2">...</label>
-                            
-                            <span class="toggle-handle"></span>
+                    <div class="mb-6 relative" id="container_sala_medica">
+                        <p class="text-sm font-bold text-gray-600 mb-2">A. Sala Médica</p>
+                        <div class="tri-state-toggle-group">
+                            <input type="radio" name="item_sala_medica" value="aberta" id="sala_medica_aberta" class="sr-only toggle-input-aberta">
+                            <input type="radio" name="item_sala_medica" value="indefinido" id="sala_medica_neutro" class="sr-only toggle-input-neutro" checked>
+                            <input type="radio" name="item_sala_medica" value="fechada" id="sala_medica_fechada" class="sr-only toggle-input-fechada">
+
+                            <div class="toggle-track-3state">
+                                <label for="sala_medica_aberta" class="toggle-label-3state label-left">ABERTA</label>
+                                <label for="sala_medica_neutro" class="toggle-label-3state label-center"></label>
+                                <label for="sala_medica_fechada" class="toggle-label-3state label-right">FECHADA</label>
+                                <div class="toggle-handle-3state"></div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-4 pt-4 border-t">
-                        <label class="block text-md font-medium text-gray-800 mb-3">B. Sala de Reunião</label>
-                        <div class="toggle-switch">
-                            <input type="radio" name="item_sala_reuniao" value="opt1" id="sala_reuniao_opt1" class="toggle-input" required>
-                            <label for="sala_reuniao_opt1" class="toggle-label toggle-left" id="label_sala_reuniao_1">...</label>
-                            
-                            <input type="radio" name="item_sala_reuniao" value="opt2" id="sala_reuniao_opt2" class="toggle-input" required>
-                            <label for="sala_reuniao_opt2" class="toggle-label toggle-right" id="label_sala_reuniao_2">...</label>
-                            
-                            <span class="toggle-handle"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 pt-4 border-t">
-                        <label class="block text-md font-medium text-gray-800 mb-3">C. Exame Teórico</label>
-                        <div class="toggle-switch">
-                            <input type="radio" name="item_sala_teorico" value="opt1" id="sala_teorico_opt1" class="toggle-input" required>
-                            <label for="sala_teorico_opt1" class="toggle-label toggle-left" id="label_sala_teorico_1">...</label>
-                            
-                            <input type="radio" name="item_sala_teorico" value="opt2" id="sala_teorico_opt2" class="toggle-input" required>
-                            <label for="sala_teorico_opt2" class="toggle-label toggle-right" id="label_sala_teorico_2">...</label>
-                            
-                            <span class="toggle-handle"></span>
-                        </div>
+                        <p class="field-error-msg hidden text-red-600 text-sm mt-1 font-semibold">⚠ Obrigatório selecionar Aberta ou Fechada.</p>
                     </div>
 
-                    <div class="mt-4 pt-4 border-t">
-                        <label class="block text-md font-medium text-gray-800 mb-3">D. ADM</label>
-                        <div class="toggle-switch">
-                            <input type="radio" name="item_sala_adm" value="opt1" id="sala_adm_opt1" class="toggle-input" required>
-                            <label for="sala_adm_opt1" class="toggle-label toggle-left" id="label_sala_adm_1">...</label>
-                            
-                            <input type="radio" name="item_sala_adm" value="opt2" id="sala_adm_opt2" class="toggle-input" required>
-                            <label for="sala_adm_opt2" class="toggle-label toggle-right" id="label_sala_adm_2">...</label>
-                            
-                            <span class="toggle-handle"></span>
+                    <div class="mb-6 relative" id="container_sala_reuniao">
+                        <p class="text-sm font-bold text-gray-600 mb-2">B. Sala de Reunião</p>
+                        <div class="tri-state-toggle-group">
+                            <input type="radio" name="item_sala_reuniao" value="aberta" id="sala_reuniao_aberta" class="sr-only toggle-input-aberta">
+                            <input type="radio" name="item_sala_reuniao" value="indefinido" id="sala_reuniao_neutro" class="sr-only toggle-input-neutro" checked>
+                            <input type="radio" name="item_sala_reuniao" value="fechada" id="sala_reuniao_fechada" class="sr-only toggle-input-fechada">
+
+                            <div class="toggle-track-3state">
+                                <label for="sala_reuniao_aberta" class="toggle-label-3state label-left">ABERTA</label>
+                                <label for="sala_reuniao_neutro" class="toggle-label-3state label-center"></label>
+                                <label for="sala_reuniao_fechada" class="toggle-label-3state label-right">FECHADA</label>
+                                <div class="toggle-handle-3state"></div>
+                            </div>
                         </div>
+                        <p class="field-error-msg hidden text-red-600 text-sm mt-1 font-semibold">⚠ Obrigatório selecionar Aberta ou Fechada.</p>
+                    </div>
+
+                    <div class="mb-6 relative" id="container_sala_teorico">
+                        <p class="text-sm font-bold text-gray-600 mb-2">C. Exame Teórico</p>
+                        <div class="tri-state-toggle-group">
+                            <input type="radio" name="item_sala_teorico" value="aberta" id="sala_teorico_aberta" class="sr-only toggle-input-aberta">
+                            <input type="radio" name="item_sala_teorico" value="indefinido" id="sala_teorico_neutro" class="sr-only toggle-input-neutro" checked>
+                            <input type="radio" name="item_sala_teorico" value="fechada" id="sala_teorico_fechada" class="sr-only toggle-input-fechada">
+
+                            <div class="toggle-track-3state">
+                                <label for="sala_teorico_aberta" class="toggle-label-3state label-left">ABERTA</label>
+                                <label for="sala_teorico_neutro" class="toggle-label-3state label-center"></label>
+                                <label for="sala_teorico_fechada" class="toggle-label-3state label-right">FECHADA</label>
+                                <div class="toggle-handle-3state"></div>
+                            </div>
+                        </div>
+                        <p class="field-error-msg hidden text-red-600 text-sm mt-1 font-semibold">⚠ Obrigatório selecionar Aberta ou Fechada.</p>
+                    </div>
+
+                    <div class="mb-6 relative" id="container_sala_adm">
+                        <p class="text-sm font-bold text-gray-600 mb-2">D. ADM</p>
+                        <div class="tri-state-toggle-group">
+                            <input type="radio" name="item_sala_adm" value="aberta" id="sala_adm_aberta" class="sr-only toggle-input-aberta">
+                            <input type="radio" name="item_sala_adm" value="indefinido" id="sala_adm_neutro" class="sr-only toggle-input-neutro" checked>
+                            <input type="radio" name="item_sala_adm" value="fechada" id="sala_adm_fechada" class="sr-only toggle-input-fechada">
+
+                            <div class="toggle-track-3state">
+                                <label for="sala_adm_aberta" class="toggle-label-3state label-left">ABERTA</label>
+                                <label for="sala_adm_neutro" class="toggle-label-3state label-center"></label>
+                                <label for="sala_adm_fechada" class="toggle-label-3state label-right">FECHADA</label>
+                                <div class="toggle-handle-3state"></div>
+                            </div>
+                        </div>
+                        <p class="field-error-msg hidden text-red-600 text-sm mt-1 font-semibold">⚠ Obrigatório selecionar Aberta ou Fechada.</p>
                     </div>
                 </fieldset>
 
@@ -380,11 +398,18 @@
                 
                 <fieldset class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                     <legend class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">12. Pendências / Observações</legend>
-                    <label for="item_pendencia" class="text-sm text-gray-500">Descreva aqui problemas de "Outros" ou informe o nº do chamado aberto.</label>
-                    <textarea id="item_pendencia" name="item_pendencia" rows="4" class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" placeholder="Insira sua resposta"></textarea>
+                    <label for="item_pendencia" class="text-sm text-gray-500 mb-2 block">
+                        Descreva problemas ou informe o chamado. Caso não tenha nenhuma pendência, escreva n/a.
+                    </label>
+                    <textarea id="item_pendencia" name="item_pendencia" rows="4" 
+                              class="w-full p-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg" 
+                              placeholder="Caso não tenha nenhuma pendência escrever n/a (não se aplica)" required></textarea>
+                    <p class="field-error-msg hidden text-red-600 text-sm mt-1 font-semibold" id="error_pendencia">⚠ Campo obrigatório.</p>
                 </fieldset>
 
-                <div id="checklist-error" class="hidden bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg text-center font-medium shadow-sm"></div>
+                <div id="checklist-error" class="hidden bg-red-100 border border-red-400 text-red-800 p-4 rounded-lg text-center font-bold shadow-sm">
+                    Obrigatório preencher todos os campos. Verifique as mensagens em vermelho.
+                </div>
 
                 <div class="pt-8">
                     <button type="submit" id="btn-salvar" 
@@ -397,6 +422,7 @@
             </form>
         </div>
     </div>
+
     <div id="app-screen-gestor" class="hidden-screen max-w-5xl mx-auto p-6 bg-white min-h-screen shadow-lg">
         
         <header class="mb-8 pb-4 border-b border-gray-200 flex justify-between items-start">
